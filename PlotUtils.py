@@ -20,7 +20,9 @@ plt.rcParams["axes.prop_cycle"] =  plt.cycler('color', ['#67001f', '#053061', '#
 # plt.rcParams["axes.prop_cycle"] =  plt.cycler('color', ['#8dd3c7', '#ffffb3', '#bebada', '#fb8072', '#80b1d3', '#fdb462', '#b3de69', '#fccde5', '#d9d9d9','#bc80bd','#ccebc5','#ffed6f'])
 # plt.rcParams["axes.prop_cycle"] =  plt.cycler('color', ['#8dd3c7', '#ffffb3', '#bebada', '#fb8072', '#80b1d3', '#fdb462', '#b3de69', '#fccde5', '#d9d9d9','#bc80bd','#ccebc5','#ffed6f'][::-1])
 
-def donutPlot(data, recipe, title = False,png = False, pdf = False, legend = True, figsize=(18, 9)):
+def donutPlot(data, recipe, title = False,png = False, pdf = False, legend = True, figsize=(18, 9), fontset=False):
+    if fontset:
+        plt.rc('font', size=fontset)
     fig, ax = plt.subplots(figsize=figsize, subplot_kw=dict(aspect="equal"))
 
     wedges, texts = ax.pie(data, wedgeprops=dict(width=0.25), startangle=-40)
@@ -52,8 +54,34 @@ def donutPlot(data, recipe, title = False,png = False, pdf = False, legend = Tru
         plt.savefig(pdf + '.pdf', transparent=True)
     plt.show()
     
-def groupedBarPlot(data, xticks, title,legend=True,axislabels = False,width=0.35,figsize=(25,10), png = False, pdf = False, colors = None):
-    """Width recomendado para 2 barras agrupadas es 0.35, para 3 y 4 es 0.2"""
+def groupedBarPlot(data, xticks, title,legend=True,axislabels = False,width=0.35,figsize=(25,10), barLabel=False, png = False, pdf = False, colors = None, fsizes = False, axisLim = False):
+    """Width recomendado para 2 barras agrupadas es 0.35, para 3 y 4 es 0.2
+       Para usar el barLabel, debe ser una lista de listas por cada tipo, 
+       aun que sea solo una barra por paso en el eje x deber ser una lista contenida dentro de otra
+       Las opciones para fsizes son:
+            'font' --> controla el tamaño de los textos por defecto
+            'axes' --> tamaño de fuente del titulo y las etiquetas del eje x & y
+            'xtick' --> tamaño de fuente de los puntos en el eje x 
+            'ytick' --> tamaño de fuente en los puntos del eje y
+            'legend --> controla el tamaño de fuente de la leyenda
+            'figure' --> controla el tamaño de fuente del titulo de la figura
+       """
+    if fsizes:
+        for key,size in fsizes.items():
+            if key == 'font':
+                plt.rc(key, size=size)
+            elif key == 'axes':
+                plt.rc(key, titlesize=size)
+                plt.rc(key, labelsize=size)
+            elif key in ['xtick','ytick']:
+                plt.rc(key, labelsize=size)
+            elif key == 'legend':
+                plt.rc(key, fontsize=size)
+            elif key == 'figure':
+                plt.rc(key, titlesize=size)  
+    else:
+        plt.rc('font', size=15)
+        
     x = np.arange(len(xticks)) 
     cl = ['#67001f', '#053061', '#b2182b', '#2166ac', '#d6604d', '#4393c3', '#f4a582', '#92c5de', '#fddbc7','#d1e5f0'][::-1]
 
@@ -103,10 +131,27 @@ def groupedBarPlot(data, xticks, title,legend=True,axislabels = False,width=0.35
     if legend:
         ax.legend(prop={"size":30})
     
-    for i in rects.values():
-        ax.bar_label(i, padding=3)
+    if barLabel:
+#         error = ['Hola' for i in range(9)]
+#         ax.bar_label(list(rects.values())[0], padding=3, labels=[ e for e in error])
+        try:
+            for j,i in enumerate(rects.values()):
+                ax.bar_label(i, padding=3, labels=[barLabel[0][:].format(ldata[j][r], barLabel[j+1][r]) for r in range(len(ldata[0]))])
+        except:
+            for j,i in enumerate(rects.values()):
+                ax.bar_label(i, padding=3, labels=['{}\n{:.2f}%'.format(ldata[j][r], barLabel[j][r]) for r in range(len(ldata[0]))])
+    else:
+        for i in rects.values():
+            ax.bar_label(i, padding=3)
 
     fig.tight_layout()
+    
+    if axisLim:
+        for key,values in axisLim.items():
+            if key == 'xlim':
+                plt.xlim(values[0], values[1])
+            elif key == 'ylim':
+                plt.ylim(values[0], values[1])
     
     if png: 
         plt.savefig(png + '.png', transparent=True)
@@ -320,12 +365,34 @@ def chordDiagram(X, ax, colors=None, width=0.1, pad=2, chordwidth=0.7):
     #print(nodePos)
     return nodePos
 
-def plot_confusion_matrix(cm, classes, normalize=False,colors = None):
+def plot_confusion_matrix(cm, classes, normalize=False,colors = None,tit = False, axisLabels=False,fsizes = False):
+    if fsizes:
+        for key,size in fsizes.items():
+            if key == 'font':
+                plt.rc(key, size=size)
+            elif key == 'axes':
+                plt.rc(key, titlesize=size)
+                plt.rc(key, labelsize=size)
+            elif key in ['xtick','ytick']:
+                plt.rc(key, labelsize=size)
+            elif key == 'legend':
+                plt.rc(key, fontsize=size)
+            elif key == 'figure':
+                plt.rc(key, titlesize=size)           
+    else:
+        plt.rc('font', size=15)
+        
     if normalize:
         cm = cm.astype('float')/cm.sum(axis=1)[:,np.newaxis]
-        title, fmt = 'Matriz de confusión normalizada', '.2f'
+        if tit:
+            title, fmt = tit, '.2f'
+        else:
+            title, fmt = 'Matriz de confusión normalizada', '.2f'
     else:
-        title, fmt = 'Matriz de confusión sin normalizar', 'd'
+        if tit:
+            title, fmt = tit, 'd'
+        else:
+            title, fmt = 'Matriz de confusión sin normalizar', 'd'
         cm = cm.astype(int)
     plt.figure(figsize=(14,14))
     if colors:
@@ -343,6 +410,10 @@ def plot_confusion_matrix(cm, classes, normalize=False,colors = None):
         plt.text(j, i, format(cm[i, j], fmt),horizontalalignment="center", 
                  color="white" if cm[i, j] > thresh else "black")
     plt.tight_layout()
-    plt.ylabel('Clase Verdadera, yt')
-    plt.xlabel('Clase Predicha, y')
+    if axisLabels:
+        plt.ylabel(axisLabels[0])
+        plt.xlabel(axisLabels[1])
+    else:
+        plt.ylabel('Clase Verdadera, yt')
+        plt.xlabel('Clase Predicha, y')
     plt.show()
