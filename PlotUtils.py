@@ -294,7 +294,7 @@ def selfChordArc(start=0, end=60, radius=1.0, chordwidth=0.7, ax=None, color=(1,
         patch = patches.PathPatch(path, facecolor=color+(0.5,), edgecolor=color+(0.4,), lw=LW)
         ax.add_patch(patch)
 
-def chordDiagram(X, ax, colors=None, width=0.1, pad=2, chordwidth=0.7):
+def chordDiagram(X, ax, colors=None, width=0.1, pad=2, chordwidth=0.7, png = False, pdf = False):
     """Plot a chord diagram
     Parameters
     ----------
@@ -362,10 +362,14 @@ def chordDiagram(X, ax, colors=None, width=0.1, pad=2, chordwidth=0.7):
             ChordArc(start1, end1, start2, end2,
                      radius=1.-width, color=colors[i], chordwidth=chordwidth, ax=ax)
 
+    if png: 
+        plt.savefig(png + '.png', transparent=True)
+    if pdf:
+        plt.savefig(pdf + '.pdf', transparent=True)
     #print(nodePos)
     return nodePos
 
-def plot_confusion_matrix(cm, classes, normalize=False,colors = None,tit = False, axisLabels=False,fsizes = False):
+def plot_confusion_matrix(cm, classes, normalize=False,colors = None,tit = False, axisLabels=False,fsizes = False, png = False, pdf = False):
     if fsizes:
         for key,size in fsizes.items():
             if key == 'font':
@@ -400,7 +404,7 @@ def plot_confusion_matrix(cm, classes, normalize=False,colors = None,tit = False
     else:
         plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
     plt.title(title)
-    plt.colorbar()
+    plt.colorbar(shrink=0.75)
     tick_marks = np.arange(len(classes))
     plt.xticks(tick_marks, classes, rotation=45)
     plt.yticks(tick_marks, classes)
@@ -416,4 +420,10 @@ def plot_confusion_matrix(cm, classes, normalize=False,colors = None,tit = False
     else:
         plt.ylabel('Clase Verdadera, yt')
         plt.xlabel('Clase Predicha, y')
+        
+    if png: 
+        plt.savefig(png + '.png', transparent=True, bbox_inches='tight')
+    if pdf:
+        plt.savefig(pdf + '.pdf', transparent=True, bbox_inches='tight')
+        
     plt.show()
