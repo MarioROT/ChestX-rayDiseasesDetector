@@ -16,6 +16,18 @@ from backbone_resnet import (
     get_resnet_backbone,
     get_resnet_fpn_backbone,
 )
+from backbone_mobilenet import (
+    get_mobilenet_backbone,
+    get_mobilenet_fpn_backbone,
+)
+from backbone_shufflenet import (
+    get_shufflenet_v2_backbone,
+    get_shufflenet_v2_fpn_backbone,
+)
+from backbone_efficintnet import (
+    get_efficientnet_backbone,
+    get_efficientnet_fpn_backbone,
+)
 from utils import from_dict_to_boundingbox
 
 
@@ -35,7 +47,7 @@ def get_anchor_generator(
 def get_roi_pool(
     featmap_names: List[str] = None, output_size: int = 7, sampling_ratio: int = 2
 ):
-    """Rgresa una capa de ROI pooling (Submuestreo de Region de Interés)"""
+    """Regresa una capa de ROI pooling (Submuestreo de Region de Interés)"""
     if featmap_names is None:
         # Por defecto para ResNet como FPN
         featmap_names = ["0", "1", "2", "3"]
@@ -48,7 +60,6 @@ def get_roi_pool(
 
     return roi_pooler
 
-
 def get_fasterRCNN(
     backbone: torch.nn.Module,
     anchor_generator: AnchorGenerator,
@@ -60,7 +71,7 @@ def get_fasterRCNN(
     max_size: int = 1024,
     **kwargs,
 ):
-    """Returns the Faster-RCNN model. Default normalization: ImageNet"""
+    """Regresa el modelo de Faster-RCNN. Normalización por defecto: ImageNet"""
     model = FasterRCNN(
         backbone=backbone,
         rpn_anchor_generator=anchor_generator,
@@ -80,6 +91,7 @@ def get_fasterRCNN(
 
     return model
 
+# --------------------------- ResNet ----------------------------------------- #
 
 def get_fasterRCNN_resnet(
     num_classes: int,
@@ -91,7 +103,7 @@ def get_fasterRCNN_resnet(
     max_size: int = 1024,
     **kwargs,
 ):
-    """Returns the Faster-RCNN model with resnet backbone with and without fpn."""
+    """Regresa el modelo de Faster-RCNN con un backbone ResNet y con o sin fpn."""
 
     # Arquitectura base
     if fpn:
@@ -131,6 +143,163 @@ def get_fasterRCNN_resnet(
         **kwargs,
     )
 
+# --------------------------- MobileNet -------------------------------------- #
+
+def get_fasterRCNN_mobilenet(
+    num_classes: int,
+    backbone_name: str,
+    anchor_size: List[float],
+    aspect_ratios: List[float],
+    fpn: bool = True,
+    min_size: int = 512,
+    max_size: int = 1024,
+    **kwargs,
+):
+    """Regresa el modelo de Faster-RCNN con un backbone MobileNet y con o sin fpn."""
+
+    # Arquitectura base
+    if fpn:
+        backbone = get_mobilenet_fpn_backbone(backbone_name=backbone_name)
+    else:
+        backbone = get_mobilenet_backbone(backbone_name=backbone_name)
+
+    # Cajas ancla
+    anchor_size = anchor_size
+    aspect_ratios = aspect_ratios * len(anchor_size)
+    anchor_generator = get_anchor_generator(
+        anchor_size=anchor_size, aspect_ratios=aspect_ratios
+    )
+
+    # Submuestreo de region de interes
+    with torch.no_grad():
+        backbone.eval()
+        random_input = torch.rand(size=(1, 3, 512, 512))
+        features = backbone(random_input)
+
+    if isinstance(features, torch.Tensor):
+
+        features = OrderedDict([("0", features)])
+
+    featmap_names = [key for key in features.keys() if key.isnumeric()]
+
+    roi_pool = get_roi_pool(featmap_names=featmap_names)
+
+    # Modelo
+    return get_fasterRCNN(
+        backbone=backbone,
+        anchor_generator=anchor_generator,
+        roi_pooler=roi_pool,
+        num_classes=num_classes,
+        min_size=min_size,
+        max_size=max_size,
+        **kwargs,
+    )
+
+# --------------------------- ShuffleNet ------------------------------------- #
+
+def get_fasterRCNN_shufflenet_v2(
+    num_classes: int,
+    backbone_name: str,
+    anchor_size: List[float],
+    aspect_ratios: List[float],
+    fpn: bool = True,
+    min_size: int = 512,
+    max_size: int = 1024,
+    **kwargs,
+):
+    """Regresa el modelo de Faster-RCNN con un backbone ShuffleNet v2 y con o sin fpn."""
+
+    # Arquitectura base
+    if fpn:
+        backbone = get_shufflenet_v2_fpn_backbone(backbone_name=backbone_name)
+    else:
+        backbone = get_shufflenet_v2_backbone(backbone_name=backbone_name)
+
+    # Cajas ancla
+    anchor_size = anchor_size
+    aspect_ratios = aspect_ratios * len(anchor_size)
+    anchor_generator = get_anchor_generator(
+        anchor_size=anchor_size, aspect_ratios=aspect_ratios
+    )
+
+    # Submuestreo de region de interes
+    with torch.no_grad():
+        backbone.eval()
+        random_input = torch.rand(size=(1, 3, 512, 512))
+        features = backbone(random_input)
+
+    if isinstance(features, torch.Tensor):
+
+        features = OrderedDict([("0", features)])
+
+    featmap_names = [key for key in features.keys() if key.isnumeric()]
+
+    roi_pool = get_roi_pool(featmap_names=featmap_names)
+
+    # Modelo
+    return get_fasterRCNN(
+        backbone=backbone,
+        anchor_generator=anchor_generator,
+        roi_pooler=roi_pool,
+        num_classes=num_classes,
+        min_size=min_size,
+        max_size=max_size,
+        **kwargs,
+    )
+
+# --------------------------- EficientNet ------------------------------------ #
+
+def get_fasterRCNN_efficientnet(
+    num_classes: int,
+    backbone_name: str,
+    anchor_size: List[float],
+    aspect_ratios: List[float],
+    fpn: bool = True,
+    min_size: int = 512,
+    max_size: int = 1024,
+    **kwargs,
+):
+    """Regresa el modelo de Faster-RCNN con un backbone EfficientNet y con o sin fpn."""
+
+    # Arquitectura base
+    if fpn:
+        backbone = get_efficientnet_fpn_backbone(backbone_name=backbone_name)
+    else:
+        backbone = get_efficientnet_backbone(backbone_name=backbone_name)
+
+    # Cajas ancla
+    anchor_size = anchor_size
+    aspect_ratios = aspect_ratios * len(anchor_size)
+    anchor_generator = get_anchor_generator(
+        anchor_size=anchor_size, aspect_ratios=aspect_ratios
+    )
+
+    # Submuestreo de region de interes
+    with torch.no_grad():
+        backbone.eval()
+        random_input = torch.rand(size=(1, 3, 512, 512))
+        features = backbone(random_input)
+
+    if isinstance(features, torch.Tensor):
+
+        features = OrderedDict([("0", features)])
+
+    featmap_names = [key for key in features.keys() if key.isnumeric()]
+
+    roi_pool = get_roi_pool(featmap_names=featmap_names)
+
+    # Modelo
+    return get_fasterRCNN(
+        backbone=backbone,
+        anchor_generator=anchor_generator,
+        roi_pooler=roi_pool,
+        num_classes=num_classes,
+        min_size=min_size,
+        max_size=max_size,
+        **kwargs,
+    )
+
+# --------------------------------------------------------------------------- #
 
 class FasterRCNN_lightning(pl.LightningModule):
     def __init__(
@@ -138,7 +307,7 @@ class FasterRCNN_lightning(pl.LightningModule):
     ):
         super().__init__()
 
-        # Model0
+        # Modelo
         self.model = model
 
         # Classes (incluyendo el fondo)

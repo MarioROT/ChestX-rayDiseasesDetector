@@ -7,6 +7,10 @@ import torch
 from sklearn.externals._pilutil import bytescale
 from torchvision.ops import nms
 
+def addHM(inp: np.ndarray):
+    inp_out =  np.append(inp,[[123 for i in range(inp.shape[0])]], axis = 0)
+    return inp_out
+
 
 def normalize_01(inp: np.ndarray):
     """Acotar la imagen de entrada al rango de valores [0, 1] (sin recorte)"""

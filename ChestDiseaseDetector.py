@@ -5,7 +5,8 @@
 # Para activar el directorio como path para cargar como módulos
 # cuando se obtiene: 'No module named X'
 import sys
-sys.path.append('D:/GitHub/Mariuki/DiseaseDetector/')
+sys.path.append('D:/GitHub/Mariuki/DiseaseDetector/Detector de Padecimientos Rayos-X Torax - Codigo')
+
 # Activar variable de entorno por si se tiene el problema de que se reinicia el kernel
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
@@ -96,7 +97,7 @@ inputs.sort()
 targets.sort()
 
 # Mapeo de etiquetas a enteros
-mapping = read_json(pathlib.Path('LabelsMappping.json'))
+mapping = read_json(pathlib.Path('Detector de Padecimientos Rayos-X Torax - Codigo/LabelsMappping.json'))
 mapping
 # Transformaciones y aumentado de datos
 transforms = ComposeDouble([
@@ -104,24 +105,33 @@ transforms = ComposeDouble([
     # AlbumentationWrapper(albumentation=A.HorizontalFlip(p=0.5)),
     # AlbumentationWrapper(albumentation=A.RandomScale(p=0.5, scale_limit=0.5)),
     # AlbuWrapper(albu=A.VerticalFlip(p=0.5)),
-    FunctionWrapperDouble(np.moveaxis, source=-1, destination=0),
-    FunctionWrapperDouble(normalize_01)
+    # FunctionWrapperDouble(np.moveaxis, source=-1, destination=0), # Solo aplica cuando las imagenes son originalmente de 3 canales de color
+    FunctionWrapperDouble(normalize_01),
+    # FunctionWrapperDouble(addHM)
 ])
 
 # Conjunto de datos
 dataset = ObjectDetectionDataSet(inputs=inputs,
-                                 targets=targets,
-                                 transform=transforms,
-                                 add_dim = True,
-                                 use_cache=False,
-                                 convert_to_format=None,
-                                 mapping=mapping)
+                             targets=targets,
+                             transform=transforms,
+                             add_dim = True,
+                             use_cache=False,
+                             convert_to_format=None,
+                             mapping=mapping,
+                             metadata_dir='ChestX-ray8-Data/Data_Entry_2017_v2020.csv',
+                             filters = [[op.gt,'Patient Age',10],[op.lt,'Patient Age',81]],
+                             id_column = 'Image Index')
+
+# Adquiriendo la cantidad de datos del conjunto (si es el caso, con los filtros aplicados)
+len(dataset)
 
 ## Mirando una muestra del conjunto de datos
 sample = dataset[1]
-# OLa muestra es un diccionario con las llaves:  ‘x’(Image), ‘x_name’(Image file name), ‘y’(Boxes), ‘y_name’(Annotations file name)
+
+# La muestra es un diccionario con las llaves:  ‘x’(Image), ‘x_name’(Image file name), ‘y’(Boxes), ‘y_name’(Annotations file name)
 print(sample['x'].shape)
 print(sample['x'])
+
 ## Visualiziar el conjunto de datos
 colors = ['red','blue','black','purple','yellow','green','#aaffff','orange']
 color_mapping = {v:colors[i] for i,v in enumerate(mapping.values())}
@@ -384,7 +394,7 @@ import os
 import neptune
 import neptune.new as neptune
 # from getpass import getpass
-# api_key = getpass('eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiJlMjQ1NGZkNS00MmJhLTQwYWYtYjEyYi02ZTFjY2JkN2Q2YzMifQ==')
+# api_key = getpass('put_your_key')
 # print(api_key)
 # api_key_neptune.py
 #

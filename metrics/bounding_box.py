@@ -1,9 +1,9 @@
-from pytorch_faster_rcnn_tutorial.metrics.enumerators import (
+from metrics.enumerators import (
     BBFormat,
     BBType,
     CoordinatesType,
 )
-from pytorch_faster_rcnn_tutorial.metrics.general_utils import (
+from metrics.general_utils import (
     convert_to_absolute_values,
     convert_to_relative_values,
 )

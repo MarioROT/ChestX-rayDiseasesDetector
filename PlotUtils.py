@@ -54,7 +54,7 @@ def donutPlot(data, recipe, title = False,png = False, pdf = False, legend = Tru
         plt.savefig(pdf + '.pdf', transparent=True)
     plt.show()
     
-def groupedBarPlot(data, xticks, title,legend=True,axislabels = False,width=0.35,figsize=(25,10), barLabel=False, png = False, pdf = False, colors = None, fsizes = False, axisLim = False):
+def groupedBarPlot(data, xticks, title,legend=True,axislabels = False,width=0.35,figsize=(25,10), barLabel=False, png = False, pdf = False, colors = None, fsizes = False, axisLim = False, xtick_rot=False):
     """Width recomendado para 2 barras agrupadas es 0.35, para 3 y 4 es 0.2
        Para usar el barLabel, debe ser una lista de listas por cada tipo, 
        aun que sea solo una barra por paso en el eje x deber ser una lista contenida dentro de otra
@@ -126,7 +126,10 @@ def groupedBarPlot(data, xticks, title,legend=True,axislabels = False,width=0.35
         ax.set_xticks(x+width)
     else:
         ax.set_xticks(x)
-    ax.set_xticklabels(xticks)
+    if xtick_rot:
+        ax.set_xticklabels(xticks, rotation = xtick_rot)
+    else:
+        ax.set_xticklabels(xticks)
     
     if legend:
         ax.legend(prop={"size":30})

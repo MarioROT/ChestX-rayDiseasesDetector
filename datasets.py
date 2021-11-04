@@ -11,7 +11,9 @@ from transformations import ComposeDouble, ComposeSingle
 from transformations import map_class_to_int
 from utils import read_json, read_pt
 import numpy as np
-
+import pandas as pd
+import operator as op
+import re
 
 class ObjectDetectionDataSet(torch.utils.data.Dataset):
     """
@@ -37,6 +39,9 @@ class ObjectDetectionDataSet(torch.utils.data.Dataset):
         convert_to_format: str = None,
         mapping: Dict = None,
         tgt_int64: bool = False,
+        metadata_dir: pathlib.Path = None,
+        filters: List = None,
+        id_column: str = None
     ):
         self.inputs = inputs
         self.targets = targets
@@ -46,11 +51,25 @@ class ObjectDetectionDataSet(torch.utils.data.Dataset):
         self.convert_to_format = convert_to_format
         self.mapping = mapping
         self.tgt_int64 = tgt_int64
+        self.metadata = metadata_dir
+        self.filters = filters
+        self.id_column = id_column
 
         if self.use_cache:
             # Usar multiprocesamiento para cargar las imagenes y las etiquetas en la memoria RAM
             with Pool() as pool:
                 self.cached_data = pool.starmap(self.read_images, zip(inputs, targets))
+
+        if metadata_dir:
+            self.filtered_inputs = []
+            self.filtered_targets = []
+            self.id_list = self.add_filters(self.metadata, self.filters, self.id_column)
+            for num,input in enumerate(self.inputs):
+                if re.search(r'.*\\(.*)\..*', str(input)).group(1) in self.id_list:
+                    self.filtered_inputs.append(input)
+                    self.filtered_targets.append(self.targets[num])
+            self.inputs = self.filtered_inputs
+            self.targets = self.filtered_targets
 
 
     def __len__(self):
@@ -131,8 +150,11 @@ class ObjectDetectionDataSet(torch.utils.data.Dataset):
 
         if self.add_dim:
             if len(x.shape) == 2:
-                x = x.T
-                x = np.array([x])
+                xD = np.empty((3,x.shape[0],x.shape[1]))
+                xD[0],xD[1],xD[2] = x,x,x
+                x = xD
+                # x = x.T
+                # x = np.array([x])
             # print(x.shape)
             # x = np.moveaxis(x, source=1, destination=-1)
             # x = np.expand_dims(x, axis=0)
@@ -163,6 +185,19 @@ class ObjectDetectionDataSet(torch.utils.data.Dataset):
     def read_images(inp, tar):
         return imread(inp), read_json(tar) #read_pt(tar)
 
+    @staticmethod
+    def add_filters(met_path, filters, id_column):
+        try:
+            metadataDF = pd.read_csv(met_path)
+        except:
+            metadataDF = pd.read_excel(met_path, engine='openpyxl')
+
+        for filter in filters:
+            metadataDF = metadataDF[filter[0](metadataDF[filter[1]],filter[2])]
+        met_id = metadataDF[id_column]
+        met_id = [re.search(r'(.*)\..*', i).group(1) for i in met_id]
+        return met_id
+
 
 class ObjectDetectionDatasetSingle(torch.utils.data.Dataset):
     """
@@ -177,15 +212,32 @@ class ObjectDetectionDatasetSingle(torch.utils.data.Dataset):
         inputs: List[pathlib.Path],
         transform: ComposeSingle = None,
         use_cache: bool = False,
+        metadata_dir: pathlib.Path = None,
+        filters: List = None,
+        id_column: str = None
     ):
         self.inputs = inputs
         self.transform = transform
         self.use_cache = use_cache
+        self.metadata = metadata_dir
+        self.filters = filters
+        self.id_column = id_column
 
         if self.use_cache:
             # Usar multiprocesamiento para cargar las imagenes y las etiquetas en la memoria RAM
             with Pool() as pool:
                 self.cached_data = pool.starmap(self.read_images, inputs)
+
+        if metadata_dir:
+            self.filtered_inputs = []
+            self.filtered_targets = []
+            self.id_list = self.add_filters(self.metadata, self.filters, self.id_column)
+            for num,input in enumerate(self.inputs):
+                if re.search(r'.*\\(.*)\..*', str(input)).group(1) in self.id_list:
+                    self.filtered_inputs.append(input)
+                    self.filtered_targets.append(self.targets[num])
+            self.inputs = self.filtered_inputs
+            self.targets = self.filtered_targets
 
     def __len__(self):
         return len(self.inputs)
@@ -216,3 +268,16 @@ class ObjectDetectionDatasetSingle(torch.utils.data.Dataset):
     @staticmethod
     def read_images(inp):
         return imread(inp)
+
+    @staticmethod
+    def add_filters(met_path, filters, id_column):
+        try:
+            metadataDF = pd.read_csv(met_path)
+        except:
+            metadataDF = pd.read_excel(met_path, engine='openpyxl')
+
+        for filter in filters:
+            metadataDF = metadataDF[filter[0](metadataDF[filter[1]],filter[2])]
+        met_id = metadataDF[id_column]
+        met_id = [re.search(r'(.*)\..*', i).group(1) for i in met_id]
+        return met_id
