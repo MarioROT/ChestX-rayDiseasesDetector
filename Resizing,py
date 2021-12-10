@@ -82,7 +82,7 @@ plt.show()
 transforms2 = ComposeDouble([
     Clip(),
     FunctionWrapperDouble(normalize_01),
-    RescaleWithBB([256])
+    RescaleWithBB([256], 'bicubic')
     ])
 # Conjunto de datos
 dataset2 = ObjectDetectionDataSet(inputs=inputs,

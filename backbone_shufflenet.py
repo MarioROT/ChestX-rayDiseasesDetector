@@ -26,9 +26,9 @@ def get_shufflenet_v2_backbone(backbone_name: str):
         pretrained_model = models.shufflenet_v2_x2_0(pretrained=True, progress=False)
         out_channels = 2048
 
-    print('Pretrained: ', pretrained_model)
+    # print('Pretrained: ', pretrained_model)
     backbone = torch.nn.Sequential(*list(pretrained_model.children())[:-1])
-    print('Backbone: ', backbone)
+    # print('Backbone: ', backbone)
     backbone.out_channels = out_channels
 
     return backbone

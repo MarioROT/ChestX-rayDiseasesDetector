@@ -1,5 +1,5 @@
 # %% markdown
-## Testing methods for resizing images: Bilinear, Nearest, Bicubic.
+## Testing methods for resizing images: Bilinear, Nearest, Bicubic, Box, Hamming, Lanczos.
 # %% markdown
 ### Imports
 # %% codecell
@@ -32,26 +32,26 @@ from PIL import Image
 # %% markdown
 ### Loading images and labels
 # %% codecell
- # directorio
- root = pathlib.Path("data/ChestXRay8/1024")
+# directorio
+root = pathlib.Path("data/ChestXRay8/1024")
 
- # Entradas (imágenes) y Objetivos (etiquetas)
- inputs = get_filenames_of_path(root / 'ChestBBImages')
- targets = get_filenames_of_path(root / 'ChestBBLabels')
+# Entradas (imágenes) y Objetivos (etiquetas)
+inputs = get_filenames_of_path(root / 'ChestBBImages')
+targets = get_filenames_of_path(root / 'ChestBBLabels')
 
- inputs.sort()
- targets.sort()
+inputs.sort()
+targets.sort()
 
- # Mapeo de etiquetas a enteros
- mapping = read_json(pathlib.Path('Detector de Padecimientos Rayos-X Torax - Codigo/LabelsMappping.json'))
- mapping
+# Mapeo de etiquetas a enteros
+mapping = read_json(pathlib.Path('Detector de Padecimientos Rayos-X Torax - Codigo/LabelsMappping.json'))
+mapping
 
- cmap = plt.cm.get_cmap('gist_rainbow', 8)
- crgb =  [cmap(i)[:3] for i in range(cmap.N)]
- mappingR = {v:k for k,v in mapping.items()}
- mappingC = {j:crgb[i] for i, j in enumerate(mapping.keys())}
- # %% markdown
- ## Transformaciones y creación de dataset
+cmap = plt.cm.get_cmap('gist_rainbow', 8)
+crgb =  [cmap(i)[:3] for i in range(cmap.N)]
+mappingR = {v:k for k,v in mapping.items()}
+mappingC = {j:crgb[i] for i, j in enumerate(mapping.keys())}
+# %% markdown
+## Transformaciones y creación de datasets
 # %% codecell
 # import torchvision.transforms as T
 # type(datasetBL[1]['x'])
@@ -66,15 +66,15 @@ transformsBL = ComposeDouble([
     ])
 # Conjunto de datos
 datasetBL = ObjectDetectionDataSet(inputs=inputs,
-                             targets=targets,
-                             transform=transformsBL,
-                             add_dim = 3,
-                             use_cache=False,
-                             convert_to_format=None,
-                             mapping=mapping,
-                             # metadata_dir='ChestX-ray8-Data/Data_Entry_2017_v2020.csv',
-                             # filters = [[op.gt,'Patient Age',10],[op.lt,'Patient Age',81]],
-                             id_column = 'Image Index')
+                                   targets=targets,
+                                   transform=transformsBL,
+                                   add_dim = 3,
+                                   use_cache=False,
+                                   convert_to_format=None,
+                                   mapping=mapping,
+                                   # metadata_dir='ChestX-ray8-Data/Data_Entry_2017_v2020.csv',
+                                   # filters = [[op.gt,'Patient Age',10],[op.lt,'Patient Age',81]],
+                                   id_column = 'Image Index')
 #------------------------- Nearest ----------------------------#
 transformsN = ComposeDouble([
     Clip(),
@@ -83,15 +83,15 @@ transformsN = ComposeDouble([
     ])
 # Conjunto de datos
 datasetN = ObjectDetectionDataSet(inputs=inputs,
-                             targets=targets,
-                             transform=transformsN,
-                             add_dim = 3,
-                             use_cache=False,
-                             convert_to_format=None,
-                             mapping=mapping,
-                             # metadata_dir='ChestX-ray8-Data/Data_Entry_2017_v2020.csv',
-                             # filters = [[op.gt,'Patient Age',10],[op.lt,'Patient Age',81]],
-                             id_column = 'Image Index')
+                                  targets=targets,
+                                  transform=transformsN,
+                                  add_dim = 3,
+                                  use_cache=False,
+                                  convert_to_format=None,
+                                  mapping=mapping,
+                                  # metadata_dir='ChestX-ray8-Data/Data_Entry_2017_v2020.csv',
+                                  # filters = [[op.gt,'Patient Age',10],[op.lt,'Patient Age',81]],
+                                  id_column = 'Image Index')
 #------------------------- Bicubic ----------------------------#
 transformsBC = ComposeDouble([
     Clip(),
@@ -100,15 +100,15 @@ transformsBC = ComposeDouble([
     ])
 # Conjunto de datos
 datasetBC = ObjectDetectionDataSet(inputs=inputs,
-                             targets=targets,
-                             transform=transformsBC,
-                             add_dim = 3,
-                             use_cache=False,
-                             convert_to_format=None,
-                             mapping=mapping,
-                             # metadata_dir='ChestX-ray8-Data/Data_Entry_2017_v2020.csv',
-                             # filters = [[op.gt,'Patient Age',10],[op.lt,'Patient Age',81]],
-                             id_column = 'Image Index')
+                                   targets=targets,
+                                   transform=transformsBC,
+                                   add_dim = 3,
+                                   use_cache=False,
+                                   convert_to_format=None,
+                                   mapping=mapping,
+                                   # metadata_dir='ChestX-ray8-Data/Data_Entry_2017_v2020.csv',
+                                   # filters = [[op.gt,'Patient Age',10],[op.lt,'Patient Age',81]],
+                                   id_column = 'Image Index')
 #------------------------- Box ----------------------------#
 transformsBX = ComposeDouble([
     Clip(),
@@ -117,15 +117,15 @@ transformsBX = ComposeDouble([
     ])
 # Conjunto de datos
 datasetBX = ObjectDetectionDataSet(inputs=inputs,
-                             targets=targets,
-                             transform=transformsBX,
-                             add_dim = 3,
-                             use_cache=False,
-                             convert_to_format=None,
-                             mapping=mapping,
-                             # metadata_dir='ChestX-ray8-Data/Data_Entry_2017_v2020.csv',
-                             # filters = [[op.gt,'Patient Age',10],[op.lt,'Patient Age',81]],
-                             id_column = 'Image Index')
+                                   targets=targets,
+                                   transform=transformsBX,
+                                   add_dim = 3,
+                                   use_cache=False,
+                                   convert_to_format=None,
+                                   mapping=mapping,
+                                   # metadata_dir='ChestX-ray8-Data/Data_Entry_2017_v2020.csv',
+                                   # filters = [[op.gt,'Patient Age',10],[op.lt,'Patient Age',81]],
+                                   id_column = 'Image Index')
 #------------------------- Hamming ----------------------------#
 transformsH = ComposeDouble([
     Clip(),
@@ -134,15 +134,15 @@ transformsH = ComposeDouble([
     ])
 # Conjunto de datos
 datasetH = ObjectDetectionDataSet(inputs=inputs,
-                             targets=targets,
-                             transform=transformsH,
-                             add_dim = 3,
-                             use_cache=False,
-                             convert_to_format=None,
-                             mapping=mapping,
-                             # metadata_dir='ChestX-ray8-Data/Data_Entry_2017_v2020.csv',
-                             # filters = [[op.gt,'Patient Age',10],[op.lt,'Patient Age',81]],
-                             id_column = 'Image Index')
+                                  targets=targets,
+                                  transform=transformsH,
+                                  add_dim = 3,
+                                  use_cache=False,
+                                  convert_to_format=None,
+                                  mapping=mapping,
+                                  # metadata_dir='ChestX-ray8-Data/Data_Entry_2017_v2020.csv',
+                                  # filters = [[op.gt,'Patient Age',10],[op.lt,'Patient Age',81]],
+                                  id_column = 'Image Index')
 #------------------------- Lanczos ----------------------------#
 transformsL = ComposeDouble([
     Clip(),
@@ -151,37 +151,19 @@ transformsL = ComposeDouble([
     ])
 # Conjunto de datos
 datasetL = ObjectDetectionDataSet(inputs=inputs,
-                             targets=targets,
-                             transform=transformsL,
-                             add_dim = 3,
-                             use_cache=False,
-                             convert_to_format=None,
-                             mapping=mapping,
-                             # metadata_dir='ChestX-ray8-Data/Data_Entry_2017_v2020.csv',
-                             # filters = [[op.gt,'Patient Age',10],[op.lt,'Patient Age',81]],
-                             id_column = 'Image Index')
+                                  targets=targets,
+                                  transform=transformsL,
+                                  add_dim = 3,
+                                  use_cache=False,
+                                  convert_to_format=None,
+                                  mapping=mapping,
+                                  # metadata_dir='ChestX-ray8-Data/Data_Entry_2017_v2020.csv',
+                                  # filters = [[op.gt,'Patient Age',10],[op.lt,'Patient Age',81]],
+                                  id_column = 'Image Index')
 # %% markdown
-## Visualizaciónd de resultados
+## Visualización de resultados
 # %% codecell
-sample = datasetL[204] #[131]
-sample['x'].shape
-sample['x']
-# Create figure and axes
-fig, ax = plt.subplots()
-ax.imshow(torch.moveaxis(sample2['x'],0,-1))
-rects = []
-for box,lab in zip(sample2['y']['boxes'],sample2['y']['labels']):
-    ax.add_patch(patches.Rectangle((box[0], box[1]), box[2]-box[0], box[3]-box[1], linewidth=1, edgecolor=mappingC[mappingR[int(lab)]], facecolor='none'))
-plt.show()
-sample2['x'].size()
-
-# %% codecell
-# viewer matplotlib -----------#
-import numpy as np
-import matplotlib.pyplot as plt
-
-# Fixing random state for reproducibility
-
+#--------- visor matplotlib -----------#
 class IndexTracker:
     def __init__(self, ax, X):
         self.ax = ax
@@ -235,9 +217,36 @@ class IndexTracker:
                 self.ax[r,c].set_ylabel('Image: %s' % self.X[count][self.ind]['x_name'])
                 self.ims[count].axes.figure.canvas.draw()
 
-
+# %% codecell
 fig, ax = plt.subplots(2, 3)
 tracker = IndexTracker(ax, [datasetBL, datasetN, datasetBC, datasetBX, datasetH, datasetL])
 
 fig.canvas.mpl_connect('scroll_event', tracker.on_scroll)
 plt.show()
+# %% markdown
+## Visualización de resultados con napari
+# %% codecell
+# Crear cargador de datos
+dataloader = DataLoader(dataset=datasetBC,
+                        batch_size=32,
+                        shuffle=True,
+                        num_workers=0,
+                        collate_fn=collate_double)
+
+# Prueba de obtener un lote del conjunto de datos creado
+batch = next(iter(dataloader))
+print(batch)
+batch[0]
+
+# Mapear cada clase con un color
+colors = ['red','blue','black','purple','yellow','green','#aaffff','orange']
+color_mapping = {v:colors[i] for i,v in enumerate(mapping.values())}
+
+# Ajustar transformaciones para visualización
+transform = GeneralizedRCNNTransform(min_size=1024,
+                                     max_size=1024,
+                                     image_mean=[0.485, 0.456, 0.406],
+                                     image_std=[0.229, 0.224, 0.225])
+# crear y ejecutar visualización
+datasetviewer = DatasetViewer(dataset, color_mapping, rccn_transform=transform)
+datasetviewer.napari()
