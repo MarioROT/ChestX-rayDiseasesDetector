@@ -38,7 +38,9 @@ def get_efficientnet_backbone(backbone_name: str):
         pretrained_model = models.efficientnet_b7(pretrained=True, progress=False)
         out_channels = 2560
 
+    # print('Pretrained: ', pretrained_model) # Si se presenta problema con algun backbone revisar que se puedan quitar [:-2] linea abajo
     backbone = torch.nn.Sequential(*list(pretrained_model.children())[:-2])
+    # print('Backbone: ', backbone)
     backbone.out_channels = out_channels
 
     return backbone

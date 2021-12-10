@@ -6,6 +6,10 @@
 # cuando se obtiene: 'No module named X'
 import sys
 sys.path.append('D:/GitHub/Mariuki/DiseaseDetector/Detector de Padecimientos Rayos-X Torax - Codigo')
+sys.path
+# import _openssl error: (DLLS)
+# https://stackoverflow.com/a/60405693/12283874
+# https://stackoverflow.com/a/64054522/12283874
 
 # Activar variable de entorno por si se tiene el problema de que se reinicia el kernel
 import os
@@ -105,7 +109,7 @@ transforms = ComposeDouble([
     # AlbumentationWrapper(albumentation=A.HorizontalFlip(p=0.5)),
     # AlbumentationWrapper(albumentation=A.RandomScale(p=0.5, scale_limit=0.5)),
     # AlbuWrapper(albu=A.VerticalFlip(p=0.5)),
-    # FunctionWrapperDouble(np.moveaxis, source=-1, destination=0), # Solo aplica cuando las imagenes son originalmente de 3 canales de color
+    FunctionWrapperDouble(np.moveaxis, source=-1, destination=0), # Solo aplica cuando las imagenes son originalmente de 3 canales de color
     FunctionWrapperDouble(normalize_01),
     # FunctionWrapperDouble(addHM)
 ])
@@ -118,8 +122,8 @@ dataset = ObjectDetectionDataSet(inputs=inputs,
                              use_cache=False,
                              convert_to_format=None,
                              mapping=mapping,
-                             metadata_dir='ChestX-ray8-Data/Data_Entry_2017_v2020.csv',
-                             filters = [[op.gt,'Patient Age',10],[op.lt,'Patient Age',81]],
+                             # metadata_dir='ChestX-ray8-Data/Data_Entry_2017_v2020.csv',
+                             # filters = [[op.gt,'Patient Age',10],[op.lt,'Patient Age',81]],
                              id_column = 'Image Index')
 
 # Adquiriendo la cantidad de datos del conjunto (si es el caso, con los filtros aplicados)
@@ -127,7 +131,7 @@ len(dataset)
 
 ## Mirando una muestra del conjunto de datos
 sample = dataset[1]
-
+sample
 # La muestra es un diccionario con las llaves:  ‘x’(Image), ‘x_name’(Image file name), ‘y’(Boxes), ‘y_name’(Annotations file name)
 print(sample['x'].shape)
 print(sample['x'])
@@ -253,8 +257,13 @@ anchorviewer.napari()
 ## Entrenamiento del modelo
 # Usando una API de alto nivel para obtener funcionalidades integradas y características como logging, metrics,
 # early stopping, mixed precision training, etc
-import pathlib
 
+import sys
+sys.path.append('D:/GitHub/Mariuki/DiseaseDetector/Detector de Padecimientos Rayos-X Torax - Codigo')
+import os
+os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
+
+import pathlib
 import albumentations as A
 import numpy as np
 from torch.utils.data import DataLoader
@@ -265,27 +274,27 @@ from transformations import normalize_01
 from utils import get_filenames_of_path, collate_double, read_json
 
 # Hiper-parámetros
-params = {'BATCH_SIZE': 4,
+params = {'BATCH_SIZE': 8,
           'LR': 0.001,
-          'PRECISION': 32,
+          'PRECISION': 16,
           'CLASSES': 8,
           'SEED': 42,
           'PROJECT': 'Chests',
           'EXPERIMENT': 'chests',
           'MAXEPOCHS': 500,
-          'BACKBONE': 'resnet18',
+          'BACKBONE': 'shufflenet_v2_x0_5',
           'FPN': False, # Activar uso o no de FPN
           'ANCHOR_SIZE': ((32, 64, 128, 256, 512),),
           'ASPECT_RATIOS': ((0.5, 1.0, 2.0),),
-          'MIN_SIZE': 1024,
-          'MAX_SIZE': 1024,
+          'MIN_SIZE': 1280,
+          'MAX_SIZE': 1280,
           'IMG_MEAN': [0.485, 0.456, 0.406],
           'IMG_STD': [0.229, 0.224, 0.225],
           'IOU_THRESHOLD': 0.5
           }
 
 # directorio Raíz
-root = pathlib.Path("data/ChestXRay8")
+root = pathlib.Path("data/ChestXRay8/256")
 
 # Cargar entradas y objetivos
 inputs = get_filenames_of_path(root / 'ChestBBImages')
@@ -295,30 +304,30 @@ inputs.sort()
 targets.sort()
 
 # Mapeo de clases a un valor entero
-mapping = read_json(pathlib.Path('LabelsMappping.json'))
+mapping = read_json(pathlib.Path('Detector de Padecimientos Rayos-X Torax - Codigo/LabelsMappping.json'))
 mapping
 
 # Transformaciones de entranmeinto y aumentado de datos
 transforms_training = ComposeDouble([
     Clip(),
-    AlbumentationWrapper(albumentation=A.HorizontalFlip(p=0.5)),
-    AlbumentationWrapper(albumentation=A.RandomScale(p=0.5, scale_limit=0.5)),
+    # AlbumentationWrapper(albumentation=A.HorizontalFlip(p=0.5)),
+    # AlbumentationWrapper(albumentation=A.RandomScale(p=0.5, scale_limit=0.5)),
     # AlbuWrapper(albu=A.VerticalFlip(p=0.5)),
-    FunctionWrapperDouble(np.moveaxis, source=-1, destination=0),
+    # FunctionWrapperDouble(np.moveaxis, source=-1, destination=0),
     FunctionWrapperDouble(normalize_01)
 ])
 
 # Transformaciones de validación
 transforms_validation = ComposeDouble([
     Clip(),
-    FunctionWrapperDouble(np.moveaxis, source=-1, destination=0),
+    # FunctionWrapperDouble(np.moveaxis, source=-1, destination=0),
     FunctionWrapperDouble(normalize_01)
 ])
 
 # Transformaciones de prueba
 transforms_test = ComposeDouble([
     Clip(),
-    FunctionWrapperDouble(np.moveaxis, source=-1, destination=0),
+    # FunctionWrapperDouble(np.moveaxis, source=-1, destination=0),
     FunctionWrapperDouble(normalize_01)
 ])
 
@@ -327,15 +336,33 @@ from pytorch_lightning import seed_everything
 
 seed_everything(params['SEED'])
 # len(inputs)
-# Division del conjunto de datos en subconjuntos (entrenamiento, validación y prueba)
-inputs_train, inputs_valid, inputs_test = inputs[:int(len(inputs)*0.7)], inputs[int(len(inputs)*0.7):int(len(inputs)*0.8)], inputs[int(len(inputs)*0.8):]
-targets_train, targets_valid, targets_test = targets[:int(len(inputs)*0.7)], targets[int(len(inputs)*0.7):int(len(inputs)*0.8)], targets[int(len(inputs)*0.8):]
+## -- Division del conjunto de datos en subconjuntos (entrenamiento, validación y prueba) --##
+# Partición simple, sin cuidar que haya la misma cantidad de muestras respecto a las etiquetas en cada conjunto
+# inputs_train, inputs_valid, inputs_test = inputs[:int(len(inputs)*0.2)], inputs[int(len(inputs)*0.2):int(len(inputs)*0.3)], inputs[int(len(inputs)*0.3):int(len(inputs)*0.4)]
+# targets_train, targets_valid, targets_test = targets[:int(len(inputs)*0.2)], targets[int(len(inputs)*0.2):int(len(inputs)*0.3)], targets[int(len(inputs)*0.3):int(len(inputs)*0.4)]
+# targets_train
+
+# Parrticipación estratificada: misma cantidad de instancias respecto a sus etiquetas en cada conjunto
+StratifiedPartition = read_json(pathlib.Path('DatasetSplits/ChestXRay8/split1.json'))
+
+inputs_train = [pathlib.Path('C:/Users/mario/Desktop/ChestXRay8/256/ChestBBImages/' + i[:-4] + '.png') for i in list(StratifiedPartition['Train'].keys())]
+targets_train = [pathlib.Path('C:/Users/mario/Desktop/ChestXRay8/256/ChestBBLabels/' + i[:-4] + '.json') for i in list(StratifiedPartition['Train'].keys())]
+
+inputs_valid = [pathlib.Path('C:/Users/mario/Desktop/ChestXRay8/256/ChestBBImages/' + i[:-4] + '.png') for i in list(StratifiedPartition['Val'].keys())]
+targets_valid = [pathlib.Path('data/ChestXRay8/256/ChestBBLabels/' + i[:-4] + '.json') for i in list(StratifiedPartition['Val'].keys())]
+
+inputs_test = [pathlib.Path('C:/Users/mario/Desktop/ChestXRay8/256/ChestBBImages/' + i[:-4] + '.png') for i in list(StratifiedPartition['Test'].keys())]
+targets_test = [pathlib.Path('C:/Users/mario/Desktop/ChestXRay8/256/ChestBBLabels/' + i[:-4] + '.json') for i in list(StratifiedPartition['Test'].keys())]
+
+lt = len(inputs_train)+len(inputs_valid)+len(inputs_test)
+ltr,ptr,lvd,pvd,lts,pts = len(inputs_train), len(inputs_train)/lt, len(inputs_valid), len(inputs_valid)/lt, len(inputs_test), len(inputs_test)/lt
+print('Total de datos: {}\nDatos entrenamiento: {} ({:.2f}%)\nDatos validación: {} ({:.2f}%)\nDatos Prueba: {} ({:.2f}%)'.format(lt,ltr,ptr,lvd,pvd,lts,pts))
 
 # Conjunto de datos de entrenamiento
 dataset_train = ObjectDetectionDataSet(inputs=inputs_train,
                                        targets=targets_train,
                                        transform=transforms_training,
-                                       add_dim = True,
+                                       add_dim = 3,
                                        use_cache=True,
                                        convert_to_format=None,
                                        mapping=mapping,
@@ -345,7 +372,7 @@ dataset_train = ObjectDetectionDataSet(inputs=inputs_train,
 dataset_valid = ObjectDetectionDataSet(inputs=inputs_valid,
                                        targets=targets_valid,
                                        transform=transforms_validation,
-                                       add_dim = True,
+                                       add_dim = 3,
                                        use_cache=True,
                                        convert_to_format=None,
                                        mapping=mapping,
@@ -355,7 +382,7 @@ dataset_valid = ObjectDetectionDataSet(inputs=inputs_valid,
 dataset_test = ObjectDetectionDataSet(inputs=inputs_test,
                                       targets=targets_test,
                                       transform=transforms_test,
-                                      add_dim = True,
+                                      add_dim = 3,
                                       use_cache=True,
                                       convert_to_format=None,
                                       mapping=mapping,
@@ -365,25 +392,28 @@ dataset_test = ObjectDetectionDataSet(inputs=inputs_test,
 dataloader_train = DataLoader(dataset=dataset_train,
                               batch_size=params['BATCH_SIZE'],
                               shuffle=True,
-                              num_workers=0,
+                              num_workers=6,
                               collate_fn=collate_double)
 
 # Cargador de datos de validacion
 dataloader_valid = DataLoader(dataset=dataset_valid,
-                              batch_size=4,
+                              batch_size=params['BATCH_SIZE'],
                               shuffle=False,
-                              num_workers=0,
+                              num_workers=6,
                               collate_fn=collate_double)
 
 # Cargador de datos de prueba
 dataloader_test = DataLoader(dataset=dataset_test,
-                             batch_size=2,
+                             batch_size=params['BATCH_SIZE'],
                              shuffle=False,
-                             num_workers=0,
+                             num_workers=6,
                              collate_fn=collate_double)
 
+np.array(next(iter(dataloader_train))[0][0]).shape
+next(iter(dataloader_train))
+dataset_train[77]['x'].shape
+dataset_train[77]['x_name']
 # %% codecell
-
 ## Neptune es un software para dar seguimiento al proceso de ejecución de entrenamiento y las evaluaciones de los modelos.
 # Es similar a CSV logger, TensorBoard or MLflow
 
@@ -391,8 +421,8 @@ dataloader_test = DataLoader(dataset=dataset_test,
 from pytorch_lightning.loggers.neptune import NeptuneLogger
 # from api_key_neptune import get_api_key
 import os
-import neptune
-import neptune.new as neptune
+# import neptune
+# import neptune.new as neptune
 # from getpass import getpass
 # api_key = getpass('put_your_key')
 # print(api_key)
@@ -408,12 +438,10 @@ import neptune.new as neptune
 # print(run)
 api_key = os.getenv("NEPTUNE") # cuando ya se tiene configurada la llave como variable de entorno
 
-neptune_logger = NeptuneLogger(
-    api_key=api_key,
-    project_name=f'rubsini/DiseasesDetection',
-    experiment_name=params['EXPERIMENT'],
-    params=params
-) # Conexión con neptune
+neptune_logger = NeptuneLogger(api_key=api_key,
+                               project_name=f'rubsini/DiseasesDetection',
+                               experiment_name=params['EXPERIMENT'],
+                               params=params) # Conexión con neptune
 
 
 ## Pruebas de importación de modelos ResNet
@@ -424,21 +452,20 @@ neptune_logger = NeptuneLogger(
 # model = models.resnet18(pretrained=True)
 
 # Inicialización del modelo
-from faster_RCNN import get_fasterRCNN_resnet
+from faster_RCNN import get_fasterRCNN_mobilenet, get_fasterRCNN_resnet, get_fasterRCNN_mobilenet, get_fasterRCNN_shufflenet_v2, get_fasterRCNN_efficientnet
 
-model = get_fasterRCNN_resnet(num_classes=params['CLASSES'],
-                              backbone_name=params['BACKBONE'],
+model = get_fasterRCNN_shufflenet_v2(num_classes=params['CLASSES'], ## get_fasterRCNN_resnet, get_fasterRCNN_mobilenet, get_fasterRCNN_shufflenet_v2, get_fasterRCNN_efficientnet
+                              backbone_name= params['BACKBONE'],
                               anchor_size=params['ANCHOR_SIZE'],
                               aspect_ratios=params['ASPECT_RATIOS'],
                               fpn=params['FPN'],
                               min_size=params['MIN_SIZE'],
                               max_size=params['MAX_SIZE'])
-
+model
 # Inicialización de módulo Lightning
 from faster_RCNN import FasterRCNN_lightning
 
 task = FasterRCNN_lightning(model=model, lr=params['LR'], iou_threshold=params['IOU_THRESHOLD'])
-
 
 # Crear el entrenador con monitoreos específicos
 from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor, EarlyStopping
@@ -456,7 +483,9 @@ trainer = Trainer(gpus=1,
                   default_root_dir="Experiments/",  # Directorio para guardar los checkpoints
                   logger=neptune_logger,
                   log_every_n_steps=1,
-                  num_sanity_val_steps=0#,
+                  num_sanity_val_steps=0,
+                  benchmark = True#,
+                  #accumulate_grad_batches=4#,  # Tambien se puede diccionario para modificar el numero de accumulated batches en cada epoca {indexEpoch:Num.Acc.Batches}
                   # enable_pl_optimizer=False,  # Se descomenta cuando se usa precisión de 16
                   )
 # %% Comenzar el entrenamiento
@@ -470,7 +499,7 @@ trainer.fit(task,
 # conforme a la metrica usada (mAP from pascal VOC)
 trainer.test(ckpt_path='best', test_dataloaders=dataloader_test)
 
-# Cargar información adicional del esperimento, como: todos los paquetes y versiones de el ambiente conda que fue utilizado a neptune.
+# Cargar información adicional del experimento, como: todos los paquetes y versiones de el ambiente conda que fue utilizado a neptune.
 from utils import log_packages_neptune
 import utils
 from neptunecontrib.api import log_table

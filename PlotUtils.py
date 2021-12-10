@@ -41,27 +41,27 @@ def donutPlot(data, recipe, title = False,png = False, pdf = False, legend = Tru
         if not legend:
             ax.annotate(recipe[i], xy=(x, y), xytext=(1.35*np.sign(x), 1.4*y),
                     horizontalalignment=horizontalalignment, **kw)
-    
+
     if legend:
         ax.legend(wedges, recipe,
                   title= title,
                   loc="center left",
                   bbox_to_anchor=(1, 0, 0.5, 1))
-        
-    if png: 
+
+    if png:
         plt.savefig(png + '.png', transparent=True)
     if pdf:
         plt.savefig(pdf + '.pdf', transparent=True)
     plt.show()
-    
+
 def groupedBarPlot(data, xticks, title,legend=True,axislabels = False,width=0.35,figsize=(25,10), barLabel=False, png = False, pdf = False, colors = None, fsizes = False, axisLim = False, xtick_rot=False):
     """Width recomendado para 2 barras agrupadas es 0.35, para 3 y 4 es 0.2
-       Para usar el barLabel, debe ser una lista de listas por cada tipo, 
+       Para usar el barLabel, debe ser una lista de listas por cada tipo,
        aun que sea solo una barra por paso en el eje x deber ser una lista contenida dentro de otra
        Las opciones para fsizes son:
             'font' --> controla el tamaño de los textos por defecto
             'axes' --> tamaño de fuente del titulo y las etiquetas del eje x & y
-            'xtick' --> tamaño de fuente de los puntos en el eje x 
+            'xtick' --> tamaño de fuente de los puntos en el eje x
             'ytick' --> tamaño de fuente en los puntos del eje y
             'legend --> controla el tamaño de fuente de la leyenda
             'figure' --> controla el tamaño de fuente del titulo de la figura
@@ -78,18 +78,18 @@ def groupedBarPlot(data, xticks, title,legend=True,axislabels = False,width=0.35
             elif key == 'legend':
                 plt.rc(key, fontsize=size)
             elif key == 'figure':
-                plt.rc(key, titlesize=size)  
+                plt.rc(key, titlesize=size)
     else:
         plt.rc('font', size=15)
-        
-    x = np.arange(len(xticks)) 
+
+    x = np.arange(len(xticks))
     cl = ['#67001f', '#053061', '#b2182b', '#2166ac', '#d6604d', '#4393c3', '#f4a582', '#92c5de', '#fddbc7','#d1e5f0'][::-1]
 
     if figsize:
         fig, ax = plt.subplots(figsize=figsize)
     else:
         fig, ax = plt.subplots()
-    
+
     rects = {}
     if len(data) == 1:
         ldata = list(data.values())
@@ -120,7 +120,7 @@ def groupedBarPlot(data, xticks, title,legend=True,axislabels = False,width=0.35
     if axislabels:
         ax.set_xlabel(axislabels[0])
         ax.set_ylabel(axislabels[1])
-        
+
     ax.set_title(title)
     if len(data) == 3:
         ax.set_xticks(x+width)
@@ -130,10 +130,10 @@ def groupedBarPlot(data, xticks, title,legend=True,axislabels = False,width=0.35
         ax.set_xticklabels(xticks, rotation = xtick_rot)
     else:
         ax.set_xticklabels(xticks)
-    
+
     if legend:
         ax.legend(prop={"size":30})
-    
+
     if barLabel:
 #         error = ['Hola' for i in range(9)]
 #         ax.bar_label(list(rects.values())[0], padding=3, labels=[ e for e in error])
@@ -148,21 +148,21 @@ def groupedBarPlot(data, xticks, title,legend=True,axislabels = False,width=0.35
             ax.bar_label(i, padding=3)
 
     fig.tight_layout()
-    
+
     if axisLim:
         for key,values in axisLim.items():
             if key == 'xlim':
                 plt.xlim(values[0], values[1])
             elif key == 'ylim':
                 plt.ylim(values[0], values[1])
-    
-    if png: 
+
+    if png:
         plt.savefig(png + '.png', transparent=True)
     if pdf:
         plt.savefig(pdf + '.pdf', transparent=True)
 
     plt.show()
-    
+
 LW = 0.3
 
 def polar2xy(r, theta):
@@ -365,7 +365,7 @@ def chordDiagram(X, ax, colors=None, width=0.1, pad=2, chordwidth=0.7, png = Fal
             ChordArc(start1, end1, start2, end2,
                      radius=1.-width, color=colors[i], chordwidth=chordwidth, ax=ax)
 
-    if png: 
+    if png:
         plt.savefig(png + '.png', transparent=True)
     if pdf:
         plt.savefig(pdf + '.pdf', transparent=True)
@@ -385,10 +385,10 @@ def plot_confusion_matrix(cm, classes, normalize=False,colors = None,tit = False
             elif key == 'legend':
                 plt.rc(key, fontsize=size)
             elif key == 'figure':
-                plt.rc(key, titlesize=size)           
+                plt.rc(key, titlesize=size)
     else:
         plt.rc('font', size=15)
-        
+
     if normalize:
         cm = cm.astype('float')/cm.sum(axis=1)[:,np.newaxis]
         if tit:
@@ -414,7 +414,7 @@ def plot_confusion_matrix(cm, classes, normalize=False,colors = None,tit = False
     thresh = cm.max()/2.
     for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
 #         print(j, i, format(cm[i, j]), fmt)
-        plt.text(j, i, format(cm[i, j], fmt),horizontalalignment="center", 
+        plt.text(j, i, format(cm[i, j], fmt),horizontalalignment="center",
                  color="white" if cm[i, j] > thresh else "black")
     plt.tight_layout()
     if axisLabels:
@@ -423,10 +423,63 @@ def plot_confusion_matrix(cm, classes, normalize=False,colors = None,tit = False
     else:
         plt.ylabel('Clase Verdadera, yt')
         plt.xlabel('Clase Predicha, y')
-        
-    if png: 
+
+    if png:
         plt.savefig(png + '.png', transparent=True, bbox_inches='tight')
     if pdf:
         plt.savefig(pdf + '.pdf', transparent=True, bbox_inches='tight')
-        
+
     plt.show()
+
+#-------------------------------------------------------------------------------#
+def display_grid(rows, cols, xs, y_true, y_pred=None,
+                 y_true_color='b', y_pred_color='g', figsize=(14, 7)):
+    """Despliega ejemplos en una cuadrícula."""
+    fig, ax = plt.subplots(rows, cols, figsize=figsize)
+    i = 0
+    for r in range(rows):
+        for c in range(cols):
+            img = xs[i]
+            ax[r, c].imshow(xs[i], cmap='gray')
+            ax[r, c].set_xticklabels([])
+            ax[r, c].set_yticklabels([])
+            x, y, w, h = y_true[i]
+            rect = patches.Rectangle((x, y), w, h, linewidth=1,
+                                     edgecolor=y_true_color,
+                                     facecolor='none')
+            ax[r, c].add_patch(rect)
+            if y_pred is not None:
+                img_h, img_w = img.shape[:2]
+                x, y, w, h = y_pred[i]
+                if x + w > img_w:
+                    w = img_w - x
+                if y + h > img_h:
+                    h = img_h - y
+                rect = patches.Rectangle((x, y), w, h, linewidth=1,
+                                         edgecolor=y_pred_color,
+                                         facecolor='none')
+                ax[r, c].add_patch(rect)
+            i += 1
+    fig.tight_layout()
+    plt.show()
+
+
+def display_batch(rows, cols, x, y_true, y_pred=None,
+                  y_true_color='b', y_pred_color='g', figsize=(14, 7)):
+    """Despliega un lote en una cuadrícula."""
+    # denormalizamos
+    for c, (mean, std) in enumerate(zip(IMAGENET_MEAN, IMAGENET_STD)):
+        x[:, c] = x[:, c] * std + mean
+    x *= 255
+    # rotamos canales
+    x = x.permute(0, 2, 3, 1)
+    # convertimos a entero
+    x = (x.numpy()).astype(np.uint8)
+
+    y_true = y_true.numpy().astype(np.uint8)
+    if y_pred is not None:
+        y_pred = y_pred.numpy().astype(np.uint8)
+    display_grid(rows, cols, x, y_true, y_pred,
+                 y_true_color=y_true_color,
+                 y_pred_color=y_pred_color,
+                 figsize=figsize)

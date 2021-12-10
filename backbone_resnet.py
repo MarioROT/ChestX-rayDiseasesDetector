@@ -28,10 +28,10 @@ def get_resnet_backbone(backbone_name: str):
     elif backbone_name == "resnet152":
         pretrained_model = models.resnet152(pretrained=True, progress=False)
         out_channels = 2048
-
+    print('Pretrained Model: \n', pretrained_model)
     backbone = torch.nn.Sequential(*list(pretrained_model.children())[:-2])
     backbone.out_channels = out_channels
-
+    print('Backbone: \n', backbone)
     return backbone
 
 

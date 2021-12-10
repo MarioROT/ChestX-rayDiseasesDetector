@@ -17,11 +17,12 @@ def get_mobilenet_backbone(backbone_name: str):
     if backbone_name == "mobilenet_v2":
         pretrained_model = models.mobilenet_v2(pretrained=True, progress=False)
         out_channels = 1280
+        backbone = torch.nn.Sequential(*list(pretrained_model.children())[:-1])
     elif backbone_name == "mobilenet_v3":
-        pretrained_model = models.mobilenet_v3(pretrained=True, progress=False)
+        pretrained_model = models.mobilenet_v3_large(pretrained=True, progress=False)
         out_channels = 1280
+        backbone = torch.nn.Sequential(*list(pretrained_model.children())[:-2])
 
-    backbone = torch.nn.Sequential(*list(pretrained_model.children())[:-2])
     backbone.out_channels = out_channels
 
     return backbone

@@ -138,7 +138,7 @@ class ObjectDetectionDataSet(torch.utils.data.Dataset):
 
         if self.transform is not None:
             x, target = self.transform(x, target)  # Regresa np.ndarrays
-
+            
         if "scores" in y.keys():
             bxs,lbs,srs = [],[],[]
             for r,f in enumerate(target['scores']):
@@ -148,13 +148,26 @@ class ObjectDetectionDataSet(torch.utils.data.Dataset):
                     srs.append(target['scores'][r])
             target = {'boxes':np.array(bxs), 'labels':np.array(lbs), 'scores':np.array(srs)}
 
-        if self.add_dim:
+        # Agregar Dimensión
+        if self.add_dim == 3:
             if len(x.shape) == 2:
-                xD = np.empty((3,x.shape[0],x.shape[1]))
-                xD[0],xD[1],xD[2] = x,x,x
-                x = xD
                 # x = x.T
                 # x = np.array([x])
+                xD = np.empty((3,x.shape[0],x.shape[1]))
+                xD[0],xD[1],xD[2] = x,x,x
+                # xD =  np.moveaxis(xD,source=0, destination=-1)
+                x = xD
+            elif len(x.shape) == 3:
+                # f = 1
+                x = np.moveaxis(x,source=-1, destination=0)
+        elif self.add_dim == 2:
+            if len(x.shape) == 2:
+                x = x.T
+                x = np.array([x])
+            elif len(x.shape) == 3:
+                x = np.moveaxis(x,source=-1, destination=0)
+                x = x[0].T
+                x = np.array([x])
             # print(x.shape)
             # x = np.moveaxis(x, source=1, destination=-1)
             # x = np.expand_dims(x, axis=0)

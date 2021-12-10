@@ -10,6 +10,7 @@ from IPython import get_ipython
 from neptunecontrib.api import log_table
 from torchvision.models.detection.transform import GeneralizedRCNNTransform
 from torchvision.ops import box_convert, box_area
+import torchvision.transforms as TIM
 
 from metrics.bounding_box import BoundingBox
 from metrics.enumerators import BBFormat, BBType
@@ -22,6 +23,15 @@ def get_filenames_of_path(path: pathlib.Path, ext: str = "*"):
     filenames = [file for file in path.glob(ext) if file.is_file()]
     assert len(filenames) > 0, f"No files found in path: {path}"
     return filenames
+
+def select_interpolation_method(method):
+    imc = {'bilinear':TIM.InterpolationMode.BILINEAR,
+           'nearest':TIM.InterpolationMode.NEAREST,
+           'bicubic':TIM.InterpolationMode.BICUBIC,
+           'box':TIM.InterpolationMode.BOX,
+           'hamming':TIM.InterpolationMode.HAMMING,
+           'lanczos':TIM.InterpolationMode.LANCZOS}
+    return imc[method]
 
 def read_pt(path: pathlib.Path):
     file = torch.load(path)
@@ -204,3 +214,27 @@ def log_model_neptune(
 def log_checkpoint_neptune(checkpoint_path: pathlib.Path, neptune_logger):
     neptune_logger.experiment.set_property("checkpoint_name", checkpoint_path.name)
     neptune_logger.experiment.log_artifact(str(checkpoint_path))
+
+
+def compute_iou(a, b):
+    """Computa intersección sobre unión."""
+    # obtenemos coordenadas
+    xa1, ya1, wa, ha = a.T
+    xa2, ya2 = xa1 + wa, ya1 + ha
+    xb1, yb1, wb, hb = b.T
+    xb2, yb2 = xb1 + wb, yb1 + hb
+    # determinar las coordenadas (x, y) del rectangulo de intersección
+    xa = torch.max(xa1, xb1)
+    ya = torch.max(ya1, yb1)
+    xb = torch.min(xa2, xb2)
+    yb = torch.min(ya2, yb2)
+    # computamos áreas
+    area_a = wa * ha
+    area_b = wb * hb
+    # computamos intersección
+    inter = torch.clamp(xb - xa + 1, min=0) * torch.clamp(yb - ya + 1, min=0)
+    # computamos unión
+    union = area_a + area_b - inter
+    # computamos IOU
+    iou = torch.mean(inter / union)
+    return iou

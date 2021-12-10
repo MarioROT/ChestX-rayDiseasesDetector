@@ -1,6 +1,7 @@
 from collections import OrderedDict
 from itertools import chain
 from typing import Tuple, List
+# import numpy as np
 
 import pytorch_lightning as pl
 import torch
@@ -24,7 +25,7 @@ from backbone_shufflenet import (
     get_shufflenet_v2_backbone,
     get_shufflenet_v2_fpn_backbone,
 )
-from backbone_efficintnet import (
+from backbone_efficientnet import (
     get_efficientnet_backbone,
     get_efficientnet_fpn_backbone,
 )
@@ -83,6 +84,7 @@ def get_fasterRCNN(
         max_size=max_size,
         **kwargs,
     )
+
     model.num_classes = num_classes
     model.image_mean = image_mean
     model.image_std = image_std
@@ -121,7 +123,7 @@ def get_fasterRCNN_resnet(
     # Submuestreo de region de interes
     with torch.no_grad():
         backbone.eval()
-        random_input = torch.rand(size=(1, 3, 512, 512))
+        random_input = torch.rand(size=(1, 3, 256, 256))
         features = backbone(random_input)
 
     if isinstance(features, torch.Tensor):
@@ -336,7 +338,16 @@ class FasterRCNN_lightning(pl.LightningModule):
         # Lote
         x, y, x_name, y_name = batch  # Desempaquetado de tupla
 
-        loss_dict = self.model(x, y)
+        # x = torch.moveaxis(torch.tensor(x), source = 0 , destination = -1)
+        # x = torch.moveaxis(x, source = 0 , destination = -1)
+        # try:
+        #     print(x[0].shape,x[1].shape,x[2].shape, x[3].shape)
+        #     print(x_name, '\n\n')
+        # except:
+        #     print('Passed \n\n')
+        loss_dict = self.model(x, y) # sobre las pérdidas: https://stackoverflow.com/a/48584329/12283874
+                                     # y https://stackoverflow.com/a/59903205/12283874
+        # print('Loss Dict: ', loss_dict)
         loss = sum(loss for loss in loss_dict.values())
 
         self.log_dict(loss_dict)
@@ -368,7 +379,7 @@ class FasterRCNN_lightning(pl.LightningModule):
         gt_boxes = list(chain(*gt_boxes))
         pred_boxes = [out["pred_boxes"] for out in outs]
         pred_boxes = list(chain(*pred_boxes))
-        print('Method : ',MethodAveragePrecision.EVERY_POINT_INTERPOLATION)
+        print('Method : ',MethodAveragePrecision.ELEVEN_POINT_INTERPOLATION)
         metric = get_pascalvoc_metrics(
             gt_boxes=gt_boxes,
             det_boxes=pred_boxes,

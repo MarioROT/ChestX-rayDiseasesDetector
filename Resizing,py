@@ -1,0 +1,153 @@
+import sys
+sys.path.append('D:/GitHub/Mariuki/DiseaseDetector/Detector de Padecimientos Rayos-X Torax - Codigo')
+sys.path
+
+import os
+os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
+
+import pathlib
+import albumentations as A
+import numpy as np
+
+from datasets import ObjectDetectionDataSet
+from transformations import ComposeDouble, Clip, AlbumentationWrapper, FunctionWrapperDouble, normalize_01, RescaleWithBB
+from utils import get_filenames_of_path, read_json, read_pt, collate_double, save_json
+
+import torch
+from torch.utils.data import DataLoader
+import torchvision.transforms as T
+from torchvision.utils import save_image
+from torchvision.models.detection.transform import GeneralizedRCNNTransform
+
+from visual import DatasetViewer
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+import matplotlib.patches as patches
+from PIL import Image
+%matplotlib qt
+
+# directorio
+root = pathlib.Path("data/ChestXRay8/1024")
+
+# Entradas (imágenes) y Objetivos (etiquetas)
+inputs = get_filenames_of_path(root / 'ChestBBImages')
+targets = get_filenames_of_path(root / 'ChestBBLabels')
+
+inputs.sort()
+targets.sort()
+
+# Mapeo de etiquetas a enteros
+mapping = read_json(pathlib.Path('Detector de Padecimientos Rayos-X Torax - Codigo/LabelsMappping.json'))
+mapping
+
+cmap = plt.cm.get_cmap('gist_rainbow', 8)
+crgb =  [cmap(i)[:3] for i in range(cmap.N)]
+mappingR = {v:k for k,v in mapping.items()}
+mappingC = {j:crgb[i] for i, j in enumerate(mapping.keys())}
+
+# Transformaciones y aumentado de datos
+transforms = ComposeDouble([
+    Clip(),
+    # AlbumentationWrapper(albumentation=A.HorizontalFlip(p=0.5)),
+    # AlbumentationWrapper(albumentation=A.RandomScale(p=0.5, scale_limit=0.5)),
+    # AlbuWrapper(albu=A.VerticalFlip(p=0.5)),
+    # FunctionWrapperDouble(np.moveaxis, source=-1, destination=0), # Solo aplica cuando las imagenes son originalmente de 3 canales de color
+    FunctionWrapperDouble(normalize_01),
+    # FunctionWrapperDouble(addHM)
+])
+
+
+# Conjunto de datos
+dataset = ObjectDetectionDataSet(inputs=inputs,
+                             targets=targets,
+                             transform=transforms,
+                             add_dim = 3,
+                             use_cache=False,
+                             convert_to_format=None,
+                             mapping=mapping,
+                             # metadata_dir='ChestX-ray8-Data/Data_Entry_2017_v2020.csv',
+                             # filters = [[op.gt,'Patient Age',10],[op.lt,'Patient Age',81]],
+                             id_column = 'Image Index')
+## Mirando una muestra del conjunto de datos
+sample = dataset[5]#[131]
+# Create figure and axes
+fig, ax = plt.subplots()
+ax.imshow(torch.moveaxis(sample['x'],0,-1))
+rects = []
+for box,lab in zip(sample['y']['boxes'],sample['y']['labels']):
+    ax.add_patch(patches.Rectangle((box[0], box[1]), box[2]-box[0], box[3]-box[1], linewidth=1, edgecolor=mappingC[mappingR[int(lab)]], facecolor='none'))
+plt.show()
+
+#----------- Transformación reducción de tamaño de las imágenes-----------------------#
+transforms2 = ComposeDouble([
+    Clip(),
+    FunctionWrapperDouble(normalize_01),
+    RescaleWithBB([256])
+    ])
+# Conjunto de datos
+dataset2 = ObjectDetectionDataSet(inputs=inputs,
+                             targets=targets,
+                             transform=transforms2,
+                             add_dim = 3,
+                             use_cache=False,
+                             convert_to_format=None,
+                             mapping=mapping,
+                             # metadata_dir='ChestX-ray8-Data/Data_Entry_2017_v2020.csv',
+                             # filters = [[op.gt,'Patient Age',10],[op.lt,'Patient Age',81]],
+                             id_column = 'Image Index')
+sample2= dataset2[204] #[131]
+# Create figure and axes
+fig, ax = plt.subplots()
+ax.imshow(torch.moveaxis(sample2['x'],0,-1))
+rects = []
+for box,lab in zip(sample2['y']['boxes'],sample2['y']['labels']):
+    ax.add_patch(patches.Rectangle((box[0], box[1]), box[2]-box[0], box[3]-box[1], linewidth=1, edgecolor=mappingC[mappingR[int(lab)]], facecolor='none'))
+plt.show()
+sample2['x'].size()
+
+for i,item in enumerate(dataset2):
+    # item['x'][0].savefig('data/ChestXRay8/512/ChestBBImages' + item['x_name'])
+    save_image(item['x'][0], 'data/ChestXRay8/256/ChestBBImages/' + item['x_name'])
+    save_json({'labels': [mappingR[int(lab)] for lab in item['y']['labels']],
+               'boxes':[box.numpy().astype(int).tolist() for box in item['y']['boxes']]}, 'data/ChestXRay8/256/ChestBBLabels/' + item['y_name'])
+read_json(pathlib.Path('D:/GitHub/Mariuki/DiseaseDetector/data/ChestXRay8/1024/ChestBBLabels/00010277_000.json'))
+read_json(pathlib.Path('D:/GitHub/Mariuki/DiseaseDetector/data/ChestXRay8/512/ChestBBLabels/00010277_000.json'))
+read_json(pathlib.Path('D:/GitHub/Mariuki/DiseaseDetector/data/ChestXRay8/256/ChestBBLabels/00010277_000.json'))
+
+## Visualiziar el conjunto de datos
+# colors = ['red','blue','black','purple','yellow','green','#aaffff','orange']
+# color_mapping = {v:colors[i] for i,v in enumerate(mapping.values())}
+#
+# datasetviewer = DatasetViewer(dataset2, color_mapping)
+# datasetviewer.napari()
+#
+# # Si se requiere cofigurar algunas propiedades de visualización del conjunto de datos en napari
+# # es posible hacerlo abriendo una aplicación GUI, Esto debe correrse mientras el visualizador esta abierto.
+# datasetviewer.gui_text_properties(datasetviewer.shape_layer)
+
+# Si la salida del objeto de la clase del conjunto de datos vienen en una forma diferente
+# a la especificada por el módulo de Torch
+# Es posible usar la función 'collate_double' para instanciar al cargador de datos.
+
+dataloader = DataLoader(dataset=dataset2,
+                        batch_size=32,
+                        shuffle=True,
+                        num_workers=0,
+                        collate_fn=collate_double)
+
+# Prueba de obtener un lote del conjunto de datos creado
+batch = next(iter(dataloader))
+print(batch)
+batch[0]
+
+colors = ['red','blue','black','purple','yellow','green','#aaffff','orange']
+color_mapping = {v:colors[i] for i,v in enumerate(mapping.values())}
+
+
+transform = GeneralizedRCNNTransform(min_size=1024,
+                                     max_size=1024,
+                                     image_mean=[0.485, 0.456, 0.406],
+                                     image_std=[0.229, 0.224, 0.225])
+
+datasetviewer = DatasetViewer(dataset, color_mapping, rccn_transform=transform)
+datasetviewer.napari()

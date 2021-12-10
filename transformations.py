@@ -6,6 +6,8 @@ import numpy as np
 import torch
 from sklearn.externals._pilutil import bytescale
 from torchvision.ops import nms
+import torchvision.transforms as T
+from utils import select_interpolation_method
 
 def addHM(inp: np.ndarray):
     inp_out =  np.append(inp,[[123 for i in range(inp.shape[0])]], axis = 0)
@@ -159,7 +161,10 @@ class ComposeDouble(Compose):
 
     def __call__(self, inp: np.ndarray, target: dict):
         for t in self.transforms:
-            inp, target = t(inp, target)
+            try:
+                inp, target = t(inp, target)
+            except:
+                inp = np.squeeze(t(torch.from_numpy(np.expand_dims(inp, axis = 0))).numpy())
         return inp, target
 
 
@@ -215,3 +220,68 @@ class Clip(Repr):
         tar["boxes"] = new_boxes
 
         return inp, tar
+
+class RescaleWithBB:
+
+    def __init__(self, size, interp_m = 'bilinear', to_PIL = False):
+        self.size = size
+        self.interp_m = interp_m
+        self.to_PIL = to_PIL
+
+    # hace el objeto llamable,
+    # se comporta como una una función
+    def __call__(self, img, box):
+        # obtenemos las dimensiones originales
+        try:
+            img_w, img_h = img.shape
+        except:
+            img_w, img_h,_ = img.shape
+
+        if len(self.size) == 1:
+            if len(img.shape) < 3:
+                if self.interp_m in ['box','hamming','lanczos'] or self.to_PIL: # Pasamos a PIL para poder aplicar estas interpolaciones de rescalado de imagen
+                    img = np.squeeze(T.ToTensor()(T.Resize([self.size[0],self.size[0]],interpolation = select_interpolation_method(self.interp_m))(T.ToPILImage()(torch.from_numpy(np.expand_dims(img, axis = 0))))).numpy())
+                else:
+                    img = np.squeeze(T.Resize([self.size[0],self.size[0]],interpolation = select_interpolation_method(self.interp_m))(torch.from_numpy(np.expand_dims(img, axis = 0))).numpy())
+            else:
+                if self.interp_m in ['box','hamming','lanczos'] or self.to_PIL: # Pasamos a PIL para poder aplicar estas interpolaciones de rescalado de imagen
+                    img = np.moveaxis(T.ToTensor()(T.Resize([self.size[0],self.size[0]],interpolation = select_interpolation_method(self.interp_m))(T.ToPILImage()(torch.from_numpy(np.moveaxis(img, -1, 0))))).numpy(), 0, -1)
+                else:
+                    img = np.moveaxis(T.Resize([self.size[0],self.size[0]],interpolation = select_interpolation_method(self.interp_m))(torch.from_numpy(np.moveaxis(img, -1, 0))).numpy(), 0, -1)
+
+            # calculamos escalas
+            scale_x = img_w / self.size[0]
+            scale_y = img_h / self.size[0]
+
+        elif len(self.size) == 2:
+            if len(img.shape) < 3:
+                if self.interp_m in ['box','hamming','lanczos'] or self.to_PIL: # Pasamos a PIL para poder aplicar estas interpolaciones de rescalado de imagen
+                    img = np.squeeze(T.ToTensor()(T.Resize([self.size[0],self.size[1]],interpolation = select_interpolation_method(self.interp_m))(T.ToPILImage()(torch.from_numpy(np.expand_dims(img, axis = 0))))).numpy())
+                else:
+                    img = np.squeeze(T.Resize([self.size[0],self.size[1]],interpolation = select_interpolation_method(self.interp_m))(torch.from_numpy(np.expand_dims(img, axis = 0))).numpy())
+            else:
+                if self.interp_m in ['box','hamming','lanczos'] or self.to_PIL: # Pasamos a PIL para poder aplicar estas interpolaciones de rescalado de imagen
+                    img = np.moveaxis(T.ToTensor()(T.Resize([self.size[0],self.size[1]],interpolation = select_interpolation_method(self.interp_m))(T.ToPILImage()(torch.from_numpy(np.moveaxis(img, -1, 0))))).numpy(), 0, -1)
+                else:
+                    img = np.moveaxis(T.Resize([self.size[0],self.size[1]],interpolation = select_interpolation_method(self.interp_m))(torch.from_numpy(np.moveaxis(img, -1, 0))).numpy(), 0, -1)
+            # calculamos escalas
+            scale_x = img_w / self.size[0]
+            scale_y = img_h / self.size[1]
+
+        totalboxes = []
+        for bx in box['boxes']:
+            # escalamos el cuadro delimitador
+            x1, y1, x2, y2 = bx
+            y1 = int(y1 / scale_y)
+            y2 = int(y2 / scale_y)
+            x1 = int(x1 / scale_x)
+            x2 = int(x2 / scale_x)
+
+            # calculamos ancho y alto
+            w = x2 #- x1
+            h = y2 #- y1
+            # armamos cuadro delimitador
+            totalboxes.append([x1, y1, w, h])
+        box['boxes'] = np.array(totalboxes, dtype=np.float32)
+
+        return img, box

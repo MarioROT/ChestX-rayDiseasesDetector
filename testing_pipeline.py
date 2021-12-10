@@ -1,5 +1,9 @@
 import sys
 sys.path.append('D:/GitHub/Mariuki/DiseaseDetector/Detector de Padecimientos Rayos-X Torax - Codigo')
+sys.path
+# import _openssl error: (DLLS)
+# https://stackoverflow.com/a/60405693/12283874
+# https://stackoverflow.com/a/64054522/12283874
 
 # Activar variable de entorno por si se tiene el problema de que se reinicia el kernel
 import os
