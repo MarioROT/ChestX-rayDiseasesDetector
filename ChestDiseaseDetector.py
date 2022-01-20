@@ -20,22 +20,23 @@ os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 import pathlib
 from visual import Annotator
 from utils import get_filenames_of_path
-directory = pathlib.Path('../data/Prueba') # Directorio de las imagenes a tomar
+# directory = pathlib.Path('../data/Prueba') # Directorio de las imagenes a tomar
+directory = pathlib.Path('D:/Documentos/Users/Nueva carpeta/Mario/Cars')
 image_files = get_filenames_of_path(directory / 'Imagenes') # Cargar imágenes
 
 annotator = Annotator(image_ids=image_files) # Cargar imágenes al visor
 annotator.napari() # Abrir el visor (se abre en una ventana externa)
 # En el visor de napari apareceran todas las imágenes del directorio una por una, y se puede
-# Navegar entre ellas previonando las teblas 'n' y 'b'
+# Navegar entre ellas presionando las teclas 'n' y 'b'
 
 ## Etiquetar imágenes
 
 # Con el visor Napari abierto en el conjunto de imagenes se crearan tantas capas sobre la imagen como
 # clases de etiquetas se pongan, para llevar a acabo el proceso de etiquetado se selccionan las capas
 # una a una y en el menú de la derecha se selecciona la figura de un cuadrado con vertices marcados
-# para poder solocar la caja delimitadora correpsondiente en el lugar donde se ubica el objeto de interés
+# para poder colocar la caja delimitadora correspondiente en el lugar donde se ubica el objeto de interés
 # de dicha clase, los cambios en las capas se guardan automaticamente.
-# Por cada clase en cada imagen se deb correr la celda para crear la clase.
+# Por cada clase en cada imagen se debe correr la celda para crear la clase.
 
 annotator.add_class(label='Clase 1', color='red') # Crear una clase - Label: nombre de etiqueta, color: color de las cajas delimitadoras
 annotator.add_class(label='Clase 2', color='blue') # Crear una segunda clase
@@ -277,7 +278,7 @@ from utils import get_filenames_of_path, collate_double, read_json
 params = {'BATCH_SIZE': 8,
           'LR': 0.001,
           'PRECISION': 16,
-          'CLASSES': 8,
+          'CLASSES': 9,
           'SEED': 42,
           'PROJECT': 'Chests',
           'EXPERIMENT': 'chests',
