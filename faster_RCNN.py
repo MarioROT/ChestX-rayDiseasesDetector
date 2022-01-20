@@ -350,6 +350,7 @@ class FasterRCNN_lightning(pl.LightningModule):
         # print('Loss Dict: ', loss_dict)
         ## out: Loss Dict:  {'loss_classifier': tensor(2.0956, device='cuda:0', grad_fn=<NllLossBackward0>), 'loss_box_reg': tensor(0.0165, device='cuda:0', grad_fn=<DivBackward0>),
                            ##'loss_objectness': tensor(0.6907, device='cuda:0', grad_fn=<BinaryCrossEntropyWithLogitsBackward0>), 'loss_rpn_box_reg': tensor(0.0077, device='cuda:0', grad_fn=<DivBackward0>)}
+        ##
         loss = sum(loss for loss in loss_dict.values())
 
         self.log_dict(loss_dict)

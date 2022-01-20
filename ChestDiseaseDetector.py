@@ -38,8 +38,14 @@ annotator.napari() # Abrir el visor (se abre en una ventana externa)
 # de dicha clase, los cambios en las capas se guardan automaticamente.
 # Por cada clase en cada imagen se debe correr la celda para crear la clase.
 
-annotator.add_class(label='Clase 1', color='red') # Crear una clase - Label: nombre de etiqueta, color: color de las cajas delimitadoras
-annotator.add_class(label='Clase 2', color='blue') # Crear una segunda clase
+annotator.add_class(label='Accord', color='red') # Crear una clase - Label: nombre de etiqueta, color: color de las cajas delimitadoras
+annotator.add_class(label='March', color='blue') # D:\Documentos\Users\Nueva carpeta\Mario\Cars\EtiquetasCrear una segunda clase
+annotator.add_class(label='Mustang', color='green')
+annotator.add_class(label='Ram', color='orange')
+annotator.add_class(label='Rav', color='purple')
+annotator.add_class(label='RS', color='pink')
+annotator.add_class(label='Trax', color='grey')
+annotator.add_class(label='Vantage', color='black')
 
 # Guardar las etiquetas de la imagen mostrada en el visor
 save_dir = pathlib.Path(os.getcwd()) / 'Etiquetas' # Directorio para guardar la etiqueta
@@ -47,7 +53,8 @@ save_dir.mkdir(parents=True, exist_ok=True) # Verificar existencia
 annotator.export(save_dir) # Guardar etiqueta como diccionario en archivo JSON
 
 # Guardar todas las etiquetas disponibles en conjunto (de las imagenes que fueron etiquetadas)
-save_dir = pathlib.Path(os.getcwd()) / '../Data/Prueba/Etiquetas' # Directorio para guardar las etiquetas de todas la imagenes al mismo tiempo
+# save_dir = pathlib.Path(os.getcwd()) / '../Data/Prueba/Etiquetas' # Directorio para guardar las etiquetas de todas la imagenes al mismo tiempo
+save_dir = pathlib.Path('D:/Documentos/Users/Nueva carpeta/Mario/Cars/Etiquetas')
 save_dir.mkdir(parents=True, exist_ok=True) # Verificar existencia del directorio
 annotator.export_all(pathlib.Path(save_dir)) # Guardar todas las etiquetas
 
@@ -59,8 +66,10 @@ import torch
 from utils import get_filenames_of_path
 import json
 
-root = pathlib.Path("data")
-targets = get_filenames_of_path(root / 'ChestXRay8/ChestBBLabels')
+# root = pathlib.Path("data")
+# targets = get_filenames_of_path(root / 'ChestXRay8/ChestBBLabels')
+root = pathlib.Path('D:/Documentos/Users/Nueva carpeta/Mario/Cars')
+targets = get_filenames_of_path(root / 'Etiquetas')
 targets.sort()
 
 print(targets[0])
@@ -92,25 +101,37 @@ from transformations import normalize_01
 from utils import get_filenames_of_path, read_json, read_pt
 
 # directorio
-root = pathlib.Path("data/ChestXRay8")
+# root = pathlib.Path("data/ChestXRay8")
+root = pathlib.Path('D:/Documentos/Users/Nueva carpeta/Mario/Cars')
 
 # Entradas (imágenes) y Objetivos (etiquetas)
-inputs = get_filenames_of_path(root / 'ChestBBImages')
-targets = get_filenames_of_path(root / 'ChestBBLabels')
+# inputs = get_filenames_of_path(root / 'ChestBBImages')
+# targets = get_filenames_of_path(root / 'ChestBBLabels')
+inputs = get_filenames_of_path(root / 'Imagenes')
+targets = get_filenames_of_path(root / 'Etiquetas')
 
 inputs.sort()
 targets.sort()
 
 # Mapeo de etiquetas a enteros
-mapping = read_json(pathlib.Path('Detector de Padecimientos Rayos-X Torax - Codigo/LabelsMappping.json'))
-mapping
+# mapping = read_json(pathlib.Path('Detector de Padecimientos Rayos-X Torax - Codigo/LabelsMappping.json'))
+# mapping
+mapping = {'Accord':0,
+           'March':1,
+           'Mustang':2,
+           'Ram':3,
+           'Rav':4,
+           'RS':5,
+           'Trax':6,
+           'Vantage':7}
+
 # Transformaciones y aumentado de datos
 transforms = ComposeDouble([
     Clip(),
     # AlbumentationWrapper(albumentation=A.HorizontalFlip(p=0.5)),
     # AlbumentationWrapper(albumentation=A.RandomScale(p=0.5, scale_limit=0.5)),
     # AlbuWrapper(albu=A.VerticalFlip(p=0.5)),
-    FunctionWrapperDouble(np.moveaxis, source=-1, destination=0), # Solo aplica cuando las imagenes son originalmente de 3 canales de color
+    # FunctionWrapperDouble(np.moveaxis, source=-1, destination=0), # Solo aplica cuando las imagenes son originalmente de 3 canales de color
     FunctionWrapperDouble(normalize_01),
     # FunctionWrapperDouble(addHM)
 ])
