@@ -233,9 +233,9 @@ class RescaleWithBB:
     def __call__(self, img, box):
         # obtenemos las dimensiones originales
         try:
-            img_w, img_h = img.shape
+            img_h, img_w = img.shape
         except:
-            img_w, img_h,_ = img.shape
+            img_h, img_w,_ = img.shape
 
         if len(self.size) == 1:
             if len(img.shape) < 3:

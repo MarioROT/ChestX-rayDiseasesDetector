@@ -382,7 +382,7 @@ class FasterRCNN_lightning(pl.LightningModule):
         gt_boxes = list(chain(*gt_boxes))
         pred_boxes = [out["pred_boxes"] for out in outs]
         pred_boxes = list(chain(*pred_boxes))
-        print('Method : ',MethodAveragePrecision.ELEVEN_POINT_INTERPOLATION)
+        # print('Method : ',MethodAveragePrecision.ELEVEN_POINT_INTERPOLATION)
         metric = get_pascalvoc_metrics(
             gt_boxes=gt_boxes,
             det_boxes=pred_boxes,
@@ -428,7 +428,7 @@ class FasterRCNN_lightning(pl.LightningModule):
             gt_boxes=gt_boxes,
             det_boxes=pred_boxes,
             iou_threshold=self.iou_threshold,
-            method=MethodAveragePrecision.EVERY_POINT_INTERPOLATION,
+            method=MethodAveragePrecision.ELEVEN_POINT_INTERPOLATION,
             generate_table=True,
         )
 
