@@ -30,7 +30,7 @@ from backbone_efficientnet import (
     get_efficientnet_fpn_backbone,
 )
 from utils import from_dict_to_boundingbox
-
+import torchmetrics
 
 def get_anchor_generator(
     anchor_size: Tuple[tuple] = None, aspect_ratios: Tuple[tuple] = None
@@ -330,6 +330,9 @@ class FasterRCNN_lightning(pl.LightningModule):
         # Guardar los hiperparámetros
         self.save_hyperparameters()
 
+        # Torchmetrics
+        self.accuracy = torchmetrics.Accuracy()
+
     def forward(self, x):
         self.model.eval()
         return self.model(x)
@@ -396,6 +399,10 @@ class FasterRCNN_lightning(pl.LightningModule):
 
         for key, value in per_class.items():
             self.log(f"Validation_AP_{key}", value["AP"])
+
+        print("Outs: ", outs)
+        # preds = [out[]]
+        # self.accuracy(,)
 
     def test_step(self, batch, batch_idx):
         # Lote
