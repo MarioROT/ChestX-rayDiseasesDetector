@@ -365,7 +365,7 @@ class FasterRCNN_lightning(pl.LightningModule):
 
         # Inferencia
         preds = self.model(x)
-
+        # print('Preds: ', preds)
         gt_boxes = [
             from_dict_to_boundingbox(target, name=name, groundtruth=True)
             for target, name in zip(y, x_name)
@@ -380,15 +380,15 @@ class FasterRCNN_lightning(pl.LightningModule):
 
         predscls = [pred['labels'] for pred in preds]
         ycls = [yn['labels'] for yn in y]
-        predsbbx = [pred['labels'] for pred in preds]
-        ybbx = [yn['labels'] for yn in y]
+        # predsbbx = [pred['labels'] for pred in preds]
+        # ybbx = [yn['labels'] for yn in y]
 
         # print('PredCls:', predscls)
         # print('YCls:', ycls)
-        print('Predbbx:', predsbbx)
-        print('Ybbx:', ybbx)
+        # print('Predbbx:', predsbbx)
+        # print('Ybbx:', ybbx)
 
-        return {"pred_boxes": pred_boxes, "gt_boxes": gt_boxes}
+        return {"pred_boxes": pred_boxes, "gt_boxes": gt_boxes, 'pred_cls':predscls,'gt_cls':ycls}
 
     def validation_epoch_end(self, outs):
         gt_boxes = [out["gt_boxes"] for out in outs]
@@ -410,9 +410,14 @@ class FasterRCNN_lightning(pl.LightningModule):
         for key, value in per_class.items():
             self.log(f"Validation_AP_{key}", value["AP"])
 
-        print("Outs: ", outs)
-        # preds = [out[]]
-        # self.accuracy(,)
+        gt_cls = [out["gt_cls"] for out in outs]
+        gt_cls = torch.tensor(list(i[0].item() for i in list(chain(*gt_cls))))
+        print('Gts: ', gt_cls)
+        pred_cls = [out["pred_cls"] for out in outs]
+        pred_cls = torch.tensor(list(i[0].item() for i in list(chain(*pred_cls))))
+        print('Preds: ', pred_cls)
+        self.accuracy(pred_cls,gt_cls)
+        self.log('train_acc_step', self.accuracy)
 
     def test_step(self, batch, batch_idx):
         # Lote
