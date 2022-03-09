@@ -414,8 +414,9 @@ class FasterRCNN_lightning(pl.LightningModule):
         gt_cls = torch.tensor(list(i[0].item() for i in list(chain(*gt_cls))))
         print('Gts: ', gt_cls)
         pred_cls = [out["pred_cls"] for out in outs]
+        print('Preds 1: ', pred_cls)
         pred_cls = torch.tensor(list(i[0].item() for i in list(chain(*pred_cls))))
-        print('Preds: ', pred_cls)
+        print('Preds 2: ', pred_cls)
         self.accuracy(pred_cls,gt_cls)
         self.log('train_acc_step', self.accuracy)
 
