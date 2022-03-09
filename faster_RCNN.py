@@ -365,7 +365,7 @@ class FasterRCNN_lightning(pl.LightningModule):
 
         # Inferencia
         preds = self.model(x)
-        print('Preds: ', preds)
+
         gt_boxes = [
             from_dict_to_boundingbox(target, name=name, groundtruth=True)
             for target, name in zip(y, x_name)
@@ -377,6 +377,12 @@ class FasterRCNN_lightning(pl.LightningModule):
             for pred, name in zip(preds, x_name)
         ]
         pred_boxes = list(chain(*pred_boxes))
+
+        predscls = [pred['labels'] for pred in preds]
+        ycls = [yn['labels'] for yn in y]
+
+        print('PredCls:', predcls)
+        print('YCls:', ycls)
 
         return {"pred_boxes": pred_boxes, "gt_boxes": gt_boxes}
 

@@ -131,7 +131,7 @@ def stats_dataset(dataset, rcnn_transform: GeneralizedRCNNTransform = False):
 
 
 def from_file_to_boundingbox(file_name: pathlib.Path, groundtruth: bool = True):
-    """Regresa una lista de objetos BoundingBox provenientes de uan etiqueta verdadera o un predicción."""
+    """Regresa una lista de objetos BoundingBox provenientes de una etiqueta verdadera o un predicción."""
     file = torch.load(file_name)
     labels = file["labels"]
     boxes = file["boxes"]
