@@ -381,9 +381,9 @@ class FasterRCNN_lightning(pl.LightningModule):
         predscls = [pred['labels'] for pred in preds]
         ycls = [yn['labels'] for yn in y]
 
-        print('PredCls:', predcls)
-        print('YCls:', ycls)
-
+        # print('PredCls:', predscls)
+        # print('YCls:', ycls)
+        print({"pred_boxes": pred_boxes, "gt_boxes": gt_boxes})
         return {"pred_boxes": pred_boxes, "gt_boxes": gt_boxes}
 
     def validation_epoch_end(self, outs):
