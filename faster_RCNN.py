@@ -410,24 +410,24 @@ class FasterRCNN_lightning(pl.LightningModule):
         for key, value in per_class.items():
             self.log(f"Validation_AP_{key}", value["AP"])
 
-        print('\nNew epoch and Interation\n')
-        for key1, value1 in per_class.items():
-            print('\nClass: {}\n'.format(key1))
-            for key2,value2 in value1.items():
-                if key2 == 'table':
-                    print(key2,':\n',value2)
-                else:
-                    print('{}: {}'.format(key2,value2))
+        # print('\nNew epoch and Interation\n')
+        # for key1, value1 in per_class.items():
+        #     print('\nClass: {}\n'.format(key1))
+        #     for key2,value2 in value1.items():
+        #         if key2 == 'table':
+        #             print(key2,':\n',value2)
+        #         else:
+        #             print('{}: {}'.format(key2,value2))
+        #
+        # print('----------------------------------------------------------------------------------')
 
-        print('----------------------------------------------------------------------------------')
-
-        # gt_cls = [out["gt_cls"] for out in outs]
-        # gt_cls = torch.tensor(list(i[0].item() for i in list(chain(*gt_cls))))
-        # print('Gts: ', gt_cls)
-        # pred_cls = [out["pred_cls"] for out in outs]
-        # print('Preds 1: ', pred_cls)
-        # pred_cls = torch.tensor(list(i[0].item() for i in list(chain(*pred_cls))))
-        # print('Preds 2: ', pred_cls)
+        gt_cls = [out["gt_cls"] for out in outs]
+        gt_cls = torch.tensor(list(i[0].item() for i in list(chain(*gt_cls))))
+        print('Gts: ', gt_cls)
+        pred_cls = [out["pred_cls"] for out in outs]
+        print('Preds 1: ', pred_cls)
+        pred_cls = torch.tensor(list(i[0].item() for i in list(chain(*pred_cls))))
+        print('Preds 2: ', pred_cls)
         # self.accuracy(pred_cls,gt_cls)
         # self.log('train_acc_step', self.accuracy)
 
