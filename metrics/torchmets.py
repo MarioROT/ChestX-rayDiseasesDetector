@@ -3,7 +3,7 @@ import torch
 import numpy as np
 
 #-------------- Usando las Implementaciones de torchmetrics -----------------#
-def tm(preds,target, n_clases= None, mode = 'normal', mdmc = None, print = None):
+def tm(preds,target, n_clases= None, mode = 'normal', mdmc = None, prnt = None):
     if mode == 'normal':
         if len(preds.shape) == 1:
             accuracy = torchmetrics.Accuracy()
@@ -20,11 +20,11 @@ def tm(preds,target, n_clases= None, mode = 'normal', mdmc = None, print = None)
         precision = torchmetrics.Precision(num_classes=n_clases, average = mode, mdmc_average = mdmc)
         recall = torchmetrics.Recall(num_classes=n_clases, average = mode, mdmc_average = mdmc)
         f1score = torchmetrics.F1Score(num_classes=n_clases, average = mode, mdmc_average = mdmc)
-        if (mode is 'none' or mode is None) and print is True :
+        if (mode is 'none' or mode is None) and prnt is True :
             print('Mode {}: \n Acc:{} - Pres:{} - Rec:{} - F1Sc:{}'.format(mode,accuracy(preds, target),precision(preds, target),recall(preds, target),f1score(preds, target)))
             return accuracy, precision, recall, f1score
 
-    if print is True:
+    if prnt is True:
         print('Mode {}: \n Acc:{:.4f} - Pres:{:.4f} - Rec:{:.4f} - F1Sc:{:.4f}'.format(mode,accuracy(preds, target),precision(preds, target),recall(preds, target),f1score(preds, target)))
 
     return accuracy, precision, recall, f1score
@@ -75,7 +75,7 @@ def vals(preds, target, mode = 'normal', cls = None):
 
     return tp,tn,fp,fn
 
-def imp_metrics(preds,target, n_clases = None, mode = 'normal', print = None):
+def imp_metrics(preds,target, n_clases = None, mode = 'normal', prnt = None):
     if mode == 'normal':
         tp,tn,fp,fn = vals(preds, target)
         acc = (tp+tn)/(tp+tn+fp+fn)
@@ -123,7 +123,7 @@ def imp_metrics(preds,target, n_clases = None, mode = 'normal', print = None):
                 f1sc.append(2*((pres[-1]*rec[-1])/(pres[-1]+rec[-1])))
             else:
                 f1sc.append(0)
-        if print is True:
+        if prnt is True:
             print('Mode {}: \n Acc:{} - Pres:{} - Rec:{} - F1Sc:{}'.format(mode,acc,pres,rec,f1sc))
         return accuracy, precision, recall, f1score
     elif mode == 'samples':
@@ -140,7 +140,7 @@ def imp_metrics(preds,target, n_clases = None, mode = 'normal', print = None):
         f1sc += 2*((pres*rec)/(pres+rec))
         acc,pres,rec,f1sc = [(1/len(preds))*i for i in [acc,pres,rec,f1sc]]
 
-    if print is True:
+    if prnt is True:
         print('Mode {}: \n Acc:{:.4f} - Pres:{:.4f} - Rec:{:.4f} - F1Sc:{:.4f}'.format(mode,acc,pres,rec,f1sc))
 
     return accuracy, precision, recall, f1score

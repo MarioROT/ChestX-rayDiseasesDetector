@@ -432,7 +432,7 @@ class FasterRCNN_lightning(pl.LightningModule):
         gt_cls_oh = torch.zeros(len(gt_cls),self.num_classes)
         for i in range(len(gt_cls)):
           gt_cls_oh[i, gt_cls[i]] = 1
-        gt_cls_oh = gt_cls_oh[:,1:]
+        gt_cls_oh = gt_cls_oh[:,1:].int()
         # print('Gts 1: ', gt_cls_oh)
 
         pred_cls = [out["pred_cls"] for out in outs]
@@ -440,11 +440,11 @@ class FasterRCNN_lightning(pl.LightningModule):
         pred_cls_oh = torch.zeros(len(pred_cls),self.num_classes)
         for i in range(len(pred_cls)):
           pred_cls_oh[i, pred_cls[i]] = 1
-        pred_cls_oh = pred_cls_oh[:,1:]
+        pred_cls_oh = pred_cls_oh[:,1:].int()
         # print('Preds 1: ', pred_cls_oh)
 
-        if torch_mets:
-            tm(pred_cls_oh, gt_cls_oh, self.num_classes-1, torch_mets[0], mdmc = torch_mets[1], print = torch_mets[2])
+        if self.torch_mets:
+            tm(pred_cls_oh, gt_cls_oh, self.num_classes-1, self.torch_mets[0], mdmc = self.torch_mets[1], prnt = self.torch_mets[2])
 
         # self.accuracy(pred_cls,gt_cls)
         # self.log('train_acc_step', self.accuracy)
