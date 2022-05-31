@@ -13,6 +13,11 @@ from metrics.enumerators import MethodAveragePrecision
 from metrics.pascal_voc_evaluator import (
     get_pascalvoc_metrics,
 )
+from metrics.torchmets import (
+    tm,
+    imp_metrics,
+)
+
 from backbone_resnet import (
     get_resnet_backbone,
     get_resnet_fpn_backbone,
@@ -305,7 +310,7 @@ def get_fasterRCNN_efficientnet(
 
 class FasterRCNN_lightning(pl.LightningModule):
     def __init__(
-        self, model: torch.nn.Module, lr: float = 0.0001, iou_threshold: float = 0.5
+        self, model: torch.nn.Module, lr: float = 0.0001, iou_threshold: float = 0.5, torch_mets: list = None 
     ):
         super().__init__()
 
@@ -422,13 +427,24 @@ class FasterRCNN_lightning(pl.LightningModule):
         # print('----------------------------------------------------------------------------------')
 
         gt_cls = [out["gt_cls"] for out in outs]
-        print('Gts 1: ', gt_cls)
-        gt_cls = torch.tensor(list(int(i) for i in list(chain(*chain(*gt_cls))))) # Esta mal al tomar solo el indice cero por que puede hber mas GT en una imagen.
-        print('Gts 2: ', gt_cls)
+        gt_cls = [torch.unique(item) for sublist in gt_cls for item in sublist]
+        gt_cls_oh = torch.zeros(len(gt_cls),self.num_classes)
+        for i in range(len(gt_cls)):
+          gt_cls_oh[i, gt_cls[i]] = 1
+        gt_cls_oh = gt_cls_oh[:,1:]
+        # print('Gts 1: ', gt_cls_oh)
+
         pred_cls = [out["pred_cls"] for out in outs]
-        print('Preds 1: ', pred_cls)
-        pred_cls = torch.tensor(list(i[0].item() for i in list(chain(*pred_cls))))
-        print('Preds 2: ', pred_cls)
+        pred_cls = [torch.unique(item) for sublist in pred_cls for item in sublist]
+        pred_cls_oh = torch.zeros(len(pred_cls),self.num_classes)
+        for i in range(len(pred_cls)):
+          pred_cls_oh[i, pred_cls[i]] = 1
+        pred_cls_oh = pred_cls_oh[:,1:]
+        # print('Preds 1: ', pred_cls_oh)
+
+        if torch_mets:
+            tm(pred_cls_oh, gt_cls_oh, self.num_classes-1, torch_mets[0], mdmc = torch_mets[1], print = torch_mets[2])
+
         # self.accuracy(pred_cls,gt_cls)
         # self.log('train_acc_step', self.accuracy)
 
