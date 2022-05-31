@@ -310,7 +310,7 @@ def get_fasterRCNN_efficientnet(
 
 class FasterRCNN_lightning(pl.LightningModule):
     def __init__(
-        self, model: torch.nn.Module, lr: float = 0.0001, iou_threshold: float = 0.5, torch_mets: list = None 
+        self, model: torch.nn.Module, lr: float = 0.0001, iou_threshold: float = 0.5, torch_mets: list = None
     ):
         super().__init__()
 
@@ -336,7 +336,8 @@ class FasterRCNN_lightning(pl.LightningModule):
         self.save_hyperparameters()
 
         # Torchmetrics
-        self.accuracy = torchmetrics.Accuracy()
+        self.torch_mets = torch_mets
+        # self.accuracy = torchmetrics.Accuracy()
 
     def forward(self, x):
         self.model.eval()
