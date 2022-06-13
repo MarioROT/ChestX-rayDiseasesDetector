@@ -125,7 +125,7 @@ def imp_metrics(preds,target, n_clases = None, mode = 'normal', prnt = None):
                 f1sc.append(0)
         if prnt is True:
             print('Mode {}: \n Acc:{} - Pres:{} - Rec:{} - F1Sc:{}'.format(mode,acc,pres,rec,f1sc))
-        return accuracy, precision, recall, f1score
+        return acc, pres, rec, f1sc
     elif mode == 'samples':
         acc,pres,rec,f1sc = 0,0,0,0
         for i in range(len(preds)):
@@ -143,4 +143,4 @@ def imp_metrics(preds,target, n_clases = None, mode = 'normal', prnt = None):
     if prnt is True:
         print('Mode {}: \n Acc:{:.4f} - Pres:{:.4f} - Rec:{:.4f} - F1Sc:{:.4f}'.format(mode,acc,pres,rec,f1sc))
 
-    return accuracy, precision, recall, f1score
+    return acc, pres, rec, f1sc
