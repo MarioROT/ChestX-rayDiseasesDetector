@@ -458,13 +458,14 @@ class FasterRCNN_lightning(pl.LightningModule):
         # print('Preds 1: ', pred_cls_oh)
 
         if self.torch_mets:
-            acc,pres,rec,f1 = tm(pred_cls_oh, gt_cls_oh, self.num_classes-1, self.torch_mets[0], mdmc = self.torch_mets[1], prnt = self.torch_mets[2])
-            mets = {'Accuracy':acc,
-                    'Precision':pres,
-                    'Recall':rec,
-                    'F1-Score':f1}
-            for key, value in mets.items():
-                self.log(f"{key}_{self.torch_mets[0]}_Method", value)
+            for met in self.torch_mets[0]:
+                acc,pres,rec,f1 = tm(pred_cls_oh, gt_cls_oh, self.num_classes-1, met, mdmc = self.torch_mets[1], prnt = self.torch_mets[2])
+                mets = {'Accuracy':acc,
+                        'Precision':pres,
+                        'Recall':rec,
+                        'F1-Score':f1}
+                for key, value in mets.items():
+                    self.log(f"{key}_{self.torch_mets[0]}_Method", value)
 
         # self.accuracy(pred_cls,gt_cls)
         # self.log('train_acc_step', self.accuracy)

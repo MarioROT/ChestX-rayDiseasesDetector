@@ -142,14 +142,14 @@ def evaluate(model, data_loader, device, epoch, run, torch_mets = None):
     # print(gt_cls_oh)
 
     if torch_mets:
-      acc,pres,rec,f1 = tm(pred_cls_oh, gt_cls_oh, model.roi_heads.box_predictor.cls_score.out_features-1, torch_mets[0], mdmc = torch_mets[1], prnt = torch_mets[2])
-      mets = {'Accuracy':acc,
-              'Precision':pres,
-              'Recall':rec,
-              'F1-Score':f1}
-      print('Mets: ', mets)
-      for key, value in mets.items():
-          run["logs/{}_{}_Method".format(key,torch_mets[0])].log(value)
+        for met in torch_mets[0]:
+            acc,pres,rec,f1 = tm(pred_cls_oh, gt_cls_oh, model.roi_heads.box_predictor.cls_score.out_features-1, met, mdmc = torch_mets[1], prnt = torch_mets[2])
+            mets = {'Accuracy':acc,
+                    'Precision':pres,
+                    'Recall':rec,
+                    'F1-Score':f1}
+            for key, value in mets.items():
+              run["logs/{}_{}_Method".format(key,torch_mets[0])].log(value)
 
     # gather the stats from all processes
     metric_logger.synchronize_between_processes()
