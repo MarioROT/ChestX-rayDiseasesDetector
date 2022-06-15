@@ -22,12 +22,12 @@ def tm(preds,target, n_clases= None, mode = 'normal', mdmc = None, prnt = None):
         f1score = torchmetrics.F1Score(num_classes=n_clases, average = mode, mdmc_average = mdmc)
         if (mode is 'none' or mode is None) and prnt is True :
             print('Mode {}: \n Acc:{} - Pres:{} - Rec:{} - F1Sc:{}'.format(mode,accuracy(preds, target),precision(preds, target),recall(preds, target),f1score(preds, target)))
-            return accuracy, precision, recall, f1score
+            return accuracy(preds, target),precision(preds, target),recall(preds, target),f1score(preds, target)
 
     if prnt is True:
         print('Mode {}: \n Acc:{:.4f} - Pres:{:.4f} - Rec:{:.4f} - F1Sc:{:.4f}'.format(mode,accuracy(preds, target),precision(preds, target),recall(preds, target),f1score(preds, target)))
 
-    return accuracy, precision, recall, f1score
+    return accuracy(preds, target),precision(preds, target),recall(preds, target),f1score(preds, target)
 
 #-------------- Implementaciones propias de las métricas -----------------#
 
