@@ -1,1 +1,1 @@
-{"Infiltrate": 0, "Atelectasis": 1, "Pneumonia": 2, "Cardiomegaly": 3, "Effusion": 4, "Pneumothorax": 5, "Mass": 6, "Nodule": 7}
+{"Infiltrate": 1, "Atelectasis": 2, "Pneumonia": 3, "Cardiomegaly": 4, "Effusion": 5, "Pneumothorax": 6, "Mass": 7, "Nodule": 8}
