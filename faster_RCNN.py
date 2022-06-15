@@ -1,6 +1,9 @@
 from collections import OrderedDict
 from itertools import chain
 from typing import Tuple, List
+import pathlib
+from utils import save_json
+import os
 # import numpy as np
 
 import pytorch_lightning as pl
@@ -369,9 +372,20 @@ class FasterRCNN_lightning(pl.LightningModule):
         # Lote
         x, y, x_name, y_name = batch
 
+        if not os.path.exists('Predictions/EP' + str(self.current_epoch)):
+            os.makedirs('Predictions/EP' + str(self.current_epoch))
+
         # Inferencia
         preds = self.model(x)
+        preds2 = [{k: v.to('cpu').numpy().tolist() for k, v in t.items()} for t in preds]
         # print('Preds: ', preds)
+        # print('x_name: ', x_name)
+        # print('LOGGER: ', self.logger)
+        for name,pred in zip(x_name,preds2):
+          save_json(pred,pathlib.Path('Predictions/EP'+str(self.current_epoch)+'/'+name+'.json'))
+          self.logger.experiment.log_artifact('Predictions/EP'+str(self.current_epoch)+'/'+name+'.json', 'Predictions/EP'+str(self.current_epoch)+'/'+name+'.json')
+
+
         gt_boxes = [
             from_dict_to_boundingbox(target, name=name, groundtruth=True)
             for target, name in zip(y, x_name)
