@@ -465,7 +465,7 @@ class FasterRCNN_lightning(pl.LightningModule):
                         'Recall':rec,
                         'F1-Score':f1}
                 for key, value in mets.items():
-                    self.log(f"{key}_{self.torch_mets[0]}_Method", value)
+                    self.log(f"{key}_{met}_Method", value)
 
         # self.accuracy(pred_cls,gt_cls)
         # self.log('train_acc_step', self.accuracy)

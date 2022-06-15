@@ -149,7 +149,7 @@ def evaluate(model, data_loader, device, epoch, run, torch_mets = None):
                     'Recall':rec,
                     'F1-Score':f1}
             for key, value in mets.items():
-              run["logs/{}_{}_Method".format(key,torch_mets[0])].log(value)
+              run["logs/{}_{}_Method".format(key,met)].log(value)
 
     # gather the stats from all processes
     metric_logger.synchronize_between_processes()
