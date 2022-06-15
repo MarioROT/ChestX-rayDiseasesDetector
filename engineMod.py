@@ -1,6 +1,7 @@
 import math
 import sys
 import time
+from types import LambdaType
 import torch
 import os
 import pathlib
@@ -11,6 +12,8 @@ import torchvision.models.detection.mask_rcnn
 from coco_utils import get_coco_api_from_dataset
 from coco_eval import CocoEvaluator
 import utils
+
+from torchmets import tm
 
 def save_json(obj, path: pathlib.Path):
     with open(path, "w") as fp:
@@ -74,7 +77,7 @@ def _get_iou_types(model):
 
 
 @torch.no_grad()
-def evaluate(model, data_loader, device, epoch,run):
+def evaluate(model, data_loader, device, epoch, run, torch_mets = None):
 
     n_threads = torch.get_num_threads()
     # FIXME remove this and make paste_masks_in_image run on the GPU
@@ -87,6 +90,8 @@ def evaluate(model, data_loader, device, epoch,run):
     coco = get_coco_api_from_dataset(data_loader.dataset)
     iou_types = _get_iou_types(model)
     coco_evaluator = CocoEvaluator(coco, iou_types)
+    labs = []
+    targs = []
 
     if not os.path.exists('Predictions/EP' + str(epoch)):
       os.makedirs('Predictions/EP' + str(epoch))
@@ -112,10 +117,39 @@ def evaluate(model, data_loader, device, epoch,run):
         save_json(res2[list(res2.keys())[0]],pathlib.Path("Predictions/EP"+str(epoch)+"/"+rz+".json"))
         run["Predictions/EP"+str(epoch)+"/"+rz+".json"].upload("Predictions/EP"+str(epoch)+"/"+rz+".json")
 
+        labs.append(res[list(res.keys())[0]]['labels'])
+        ts = [di['labels'] for di in targets]
+        # print('TS:', ts)
+        targs.append(ts[0])
+
         evaluator_time = time.time()
         coco_evaluator.update(res)
         evaluator_time = time.time() - evaluator_time
         metric_logger.update(model_time=model_time, evaluator_time=evaluator_time)
+
+    labs = [torch.unique(item) for item in labs]
+    pred_cls_oh = torch.zeros(len(labs),model.roi_heads.box_predictor.cls_score.out_features)
+    for i in range(len(labs)):
+      pred_cls_oh[i, labs[i]] = 1
+    pred_cls_oh = pred_cls_oh[:,1:].int()
+    # print(pred_cls_oh)
+
+    targs = [torch.unique(item) for item in targs]
+    gt_cls_oh = torch.zeros(len(targs),model.roi_heads.box_predictor.cls_score.out_features)
+    for i in range(len(labs)):
+      gt_cls_oh[i, targs[i]] = 1
+    gt_cls_oh = gt_cls_oh[:,1:].int()
+    # print(gt_cls_oh)
+
+    if torch_mets:
+      acc,pres,rec,f1 = tm(pred_cls_oh, gt_cls_oh, model.roi_heads.box_predictor.cls_score.out_features-1, torch_mets[0], mdmc = torch_mets[1], prnt = torch_mets[2])
+      mets = {'Accuracy':acc,
+              'Precision':pres,
+              'Recall':rec,
+              'F1-Score':f1}
+      print('Mets: ', mets)
+      for key, value in mets.items():
+          run["logs/{}_{}_Method".format(key,torch_mets[0])].log(value)
 
     # gather the stats from all processes
     metric_logger.synchronize_between_processes()
