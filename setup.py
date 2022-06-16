@@ -30,6 +30,8 @@ setuptools.setup(
         #"torch==1.8.1",
         #"torchvision==0.9.1",
         #"torchsummary==1.5.1",
-        #"torchmetrics==0.2.0",
+        "torchmetrics==0.7.3",
+        "opencv-python-headless==4.1.2.30",
+
     ],
 )
