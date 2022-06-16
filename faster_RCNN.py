@@ -16,7 +16,7 @@ from metrics.enumerators import MethodAveragePrecision
 from metrics.pascal_voc_evaluator import (
     get_pascalvoc_metrics,
 )
-from metrics.torchmets import (
+from torchmets import (
     tm,
     imp_metrics,
 )
@@ -33,10 +33,10 @@ from backbone_shufflenet import (
     get_shufflenet_v2_backbone,
     get_shufflenet_v2_fpn_backbone,
 )
-from backbone_efficientnet import (
-    get_efficientnet_backbone,
-    get_efficientnet_fpn_backbone,
-)
+# from backbone_efficientnet import (
+#     get_efficientnet_backbone,
+#     get_efficientnet_fpn_backbone,
+# )
 from utils import from_dict_to_boundingbox
 import torchmetrics
 
