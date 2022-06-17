@@ -56,9 +56,8 @@ def main():
     ## -- Configuraciones y Carga de datos --##
     # Llave personal de usuario obtenida de Neptune.ai
     # Se puede copiar y poner directamente la llave.
-    api_key = os.getenv("NEPTUNE")  # Si se corre asi, se necesita configurar la clave como una variable de entorno
-    # api_key = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiJlMjQ1NGZkNS00MmJhLTQwYWYtYjEyYi02ZTFjY2JkN2Q2YzMifQ=='
-
+    # api_key = os.getenv("NEPTUNE")  # Si se corre asi, se necesita configurar la clave como una variable de entorno
+    api_key = str(sys.argv[1])
     # Crear y obtener el directorio para guardar los checkpoints
     save_dir = os.getcwd() if not params["SAVE_DIR"] else params["SAVE_DIR"]
 
