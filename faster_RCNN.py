@@ -376,6 +376,8 @@ class FasterRCNN_lightning(pl.LightningModule):
 
         # if not os.path.exists('Predictions/EP' + str(self.current_epoch)):
         #     os.makedirs('Predictions/EP' + str(self.current_epoch))
+        if not os.path.exists('Predictions'):
+            os.makedirs('Predictions')
 
         # Inferencia
         preds = self.model(x)
@@ -383,10 +385,11 @@ class FasterRCNN_lightning(pl.LightningModule):
         # print('Preds: ', preds)
         # print('x_name: ', x_name)
         # print('LOGGER: ', self.logger)
-        if self.current_epoch == 0:
-          PredDict = pd.DataFrame()
-        else:
-          PredDict = pd.read_csv('/content/Predictions.csv', index_col=0)
+        # if self.current_epoch == 0:
+        #   PredDict = pd.DataFrame()
+        # else:
+        #   PredDict = pd.read_csv('/content/Predictions.csv', index_col=0)
+        PredDict = pd.DataFrame()
         for name,pred in zip(x_name,preds2):
           # save_json(pred,pathlib.Path('Predictions/EP'+str(self.current_epoch)+'/'+name+'.json'))
           # self.logger.experiment.log_artifact('Predictions/EP'+str(self.current_epoch)+'/'+name+'.json', 'Predictions/EP'+str(self.current_epoch)+'/'+name+'.json')
@@ -394,8 +397,8 @@ class FasterRCNN_lightning(pl.LightningModule):
           PredDict = PredDict.append(pred, ignore_index=True)
         # if self.current_epoch % 10 == 0:
           # print("Curr. Epoch: ", self.current_epoch)
-        PredDict.to_csv('/content/Predictions.csv')
-        self.logger.experiment.log_artifact('/content/Predictions.csv', 'Predictions/Predictions.csv')
+        PredDict.to_csv('/content/Predictions/Epoch_'+str(self.current_epoch)+'_Predictions.csv')
+        self.logger.experiment.log_artifact('/content/Predictions/Epoch_'+str(self.current_epoch)+'_Predictions.csv', 'Predictions/Epoch_'+str(self.current_epoch)+'_Predictions.csv')
 
         gt_boxes = [
             from_dict_to_boundingbox(target, name=name, groundtruth=True)
