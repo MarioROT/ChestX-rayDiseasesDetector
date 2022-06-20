@@ -66,10 +66,10 @@ import torch
 from utils import get_filenames_of_path
 import json
 
-# root = pathlib.Path("data")
-# targets = get_filenames_of_path(root / 'ChestXRay8/ChestBBLabels')
-root = pathlib.Path('D:/Documentos/Users/Nueva carpeta/Mario/Cars')
-targets = get_filenames_of_path(root / 'Etiquetas')
+root = pathlib.Path("data")
+targets = get_filenames_of_path(root / 'ChestXRay8/1024/ChestBBLabels')
+# root = pathlib.Path('D:/Documentos/Users/Nueva carpeta/Mario/Cars')
+# targets = get_filenames_of_path(root / 'Etiquetas')
 targets.sort()
 
 print(targets[0])
@@ -99,31 +99,32 @@ from datasets import ObjectDetectionDataSet
 from transformations import ComposeDouble, Clip, AlbumentationWrapper, FunctionWrapperDouble
 from transformations import normalize_01
 from utils import get_filenames_of_path, read_json, read_pt
+import operator as op
 
 # directorio
-# root = pathlib.Path("data/ChestXRay8")
-root = pathlib.Path('D:/Documentos/Users/Nueva carpeta/Mario/Cars')
+root = pathlib.Path("data/ChestXRay8/512")
+# root = pathlib.Path('D:/Documentos/Users/Nueva carpeta/Mario/Cars')
 
 # Entradas (imágenes) y Objetivos (etiquetas)
-# inputs = get_filenames_of_path(root / 'ChestBBImages')
-# targets = get_filenames_of_path(root / 'ChestBBLabels')
-inputs = get_filenames_of_path(root / 'Imagenes')
-targets = get_filenames_of_path(root / 'Etiquetas')
+inputs = get_filenames_of_path(root / 'ChestBBImages')
+targets = get_filenames_of_path(root / 'ChestBBLabels')
+# inputs = get_filenames_of_path(root / 'Imagenes')
+# targets = get_filenames_of_path(root / 'Etiquetas')
 
 inputs.sort()
 targets.sort()
 
 # Mapeo de etiquetas a enteros
-# mapping = read_json(pathlib.Path('Detector de Padecimientos Rayos-X Torax - Codigo/LabelsMappping.json'))
-# mapping
-mapping = {'Accord':0,
-           'March':1,
-           'Mustang':2,
-           'Ram':3,
-           'Rav':4,
-           'RS':5,
-           'Trax':6,
-           'Vantage':7}
+mapping = read_json(pathlib.Path('Detector de Padecimientos Rayos-X Torax - Codigo/LabelsMappping.json'))
+mapping
+# mapping = {'Accord':0,
+#            'March':1,
+#            'Mustang':2,
+#            'Ram':3,
+#            'Rav':4,
+#            'RS':5,
+#            'Trax':6,
+#            'Vantage':7}
 
 # Transformaciones y aumentado de datos
 transforms = ComposeDouble([
@@ -140,7 +141,7 @@ transforms = ComposeDouble([
 dataset = ObjectDetectionDataSet(inputs=inputs,
                              targets=targets,
                              transform=transforms,
-                             add_dim = True,
+                             add_dim = 3,
                              use_cache=False,
                              convert_to_format=None,
                              mapping=mapping,
@@ -212,8 +213,8 @@ color_mapping = {v:colors[i] for i,v in enumerate(mapping.values())}
 from visual import DatasetViewer
 from torchvision.models.detection.transform import GeneralizedRCNNTransform
 
-transform = GeneralizedRCNNTransform(min_size=1024,
-                                     max_size=1024,
+transform = GeneralizedRCNNTransform(min_size=512,
+                                     max_size=512,
                                      image_mean=[0.485, 0.456, 0.406],
                                      image_std=[0.229, 0.224, 0.225])
 
@@ -226,25 +227,26 @@ datasetviewer.napari()
 from utils import stats_dataset
 
 stats = stats_dataset(dataset)
-
+stats
+stats
 from torchvision.models.detection.transform import GeneralizedRCNNTransform
 
-transform = GeneralizedRCNNTransform(min_size=1024,
-                                     max_size=1024,
+transform = GeneralizedRCNNTransform(min_size=512,
+                                     max_size=512,
                                      image_mean=[0.485, 0.456, 0.406],
                                      image_std=[0.229, 0.224, 0.225])
 
 stats_transform = stats_dataset(dataset, transform)
-
+stats_transform
 import pandas as pd
-stats_comparison = pd.DataFrame({'Image Height':[stats['image_height'].max(),stats_transform['image_height'].max()],
-                                 'Image Width':[stats['image_width'].max(),stats_transform['image_width'].max()],
-                                 'Image Mean':[stats['image_mean'].max(),stats_transform['image_mean'].max()],
-                                 'Image Std':[stats['image_std'].max(),stats_transform['image_std'].max()],
-                                 'Boxes Height':[stats['boxes_height'].max(),stats_transform['boxes_height'].max()],
-                                 'Boxes Width':[stats['boxes_width'].max(),stats_transform['boxes_width'].max()],
-                                 'Boxes Num':[stats['boxes_num'].max(),stats_transform['boxes_num'].max()],
-                                 'Boxes Area':[stats['boxes_area'].max(),stats_transform['boxes_area'].max()]}, index = ['Without Trsfms', 'With Trsfms'])
+stats_comparison = pd.DataFrame({'Image Height':[stats['image_height'].mean(),stats_transform['image_height'].mean()],
+                                 'Image Width':[stats['image_width'].mean(),stats_transform['image_width'].mean()],
+                                 'Image Mean':[stats['image_mean'].mean(),stats_transform['image_mean'].mean()],
+                                 'Image Std':[stats['image_std'].mean(),stats_transform['image_std'].mean()],
+                                 'Boxes Height':[stats['boxes_height'].mean(),stats_transform['boxes_height'].mean()],
+                                 'Boxes Width':[stats['boxes_width'].mean(),stats_transform['boxes_width'].mean()],
+                                 'Boxes Num':[stats['boxes_num'].mean(),stats_transform['boxes_num'].mean()],
+                                 'Boxes Area':[stats['boxes_area'].mean(),stats_transform['boxes_area'].max()]}, index = ['Without Trsfms', 'With Trsfms'])
 
 print(stats_comparison.T)
 

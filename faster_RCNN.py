@@ -389,7 +389,10 @@ class FasterRCNN_lightning(pl.LightningModule):
         #   PredDict = pd.DataFrame()
         # else:
         #   PredDict = pd.read_csv('/content/Predictions.csv', index_col=0)
-        PredDict = pd.DataFrame()
+        if not os.path.exists('/content/Predictions/Epoch_'+str(self.current_epoch)+'_Predictions.csv'):
+          PredDict = pd.DataFrame()
+        else:
+          PredDict = pd.read_csv('/content/Predictions/Epoch_'+str(self.current_epoch)+'_Predictions.csv', index_col=0)
         for name,pred in zip(x_name,preds2):
           # save_json(pred,pathlib.Path('Predictions/EP'+str(self.current_epoch)+'/'+name+'.json'))
           # self.logger.experiment.log_artifact('Predictions/EP'+str(self.current_epoch)+'/'+name+'.json', 'Predictions/EP'+str(self.current_epoch)+'/'+name+'.json')
