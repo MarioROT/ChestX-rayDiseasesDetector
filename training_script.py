@@ -10,6 +10,7 @@ import albumentations as A
 import numpy as np
 from torch.utils.data import DataLoader
 import torch
+import shutil
 
 from datasets import ObjectDetectionDataSet
 from transformations import ComposeDouble, Clip, AlbumentationWrapper, FunctionWrapperDouble, normalize_01,RescaleWithBB
@@ -225,6 +226,7 @@ def main():
     trainer.max_epochs = params["MAXEPOCHS"]
     trainer.fit(task, train_dataloader=dataloader_train, val_dataloaders=dataloader_valid)
 
+    shutil.rmtree('Predictions')
     ## -- Prueba post-entrenamiento y Carga de datos a Neptune.ai --##
     ## Obtener el mejor modelo y usarlo para predecir la información de prueba,
     # basado en el conjunto de datos de validación y conforme a la metrica usada (mAP from pascal VOC)
