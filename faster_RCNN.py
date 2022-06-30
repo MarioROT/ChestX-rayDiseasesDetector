@@ -21,6 +21,7 @@ from metrics.pascal_voc_evaluator import (
 from torchmets import (
     tm,
     imp_metrics,
+    sklearn_metrics
 )
 
 from backbone_resnet import (
@@ -464,7 +465,7 @@ class FasterRCNN_lightning(pl.LightningModule):
         for i in range(len(gt_cls)):
           gt_cls_oh[i, gt_cls[i]] = 1
         gt_cls_oh = gt_cls_oh[:,1:].int()
-        # print('Gts 1: ', gt_cls_oh)
+        print('Gts 1: ', gt_cls_oh)
 
         pred_cls = [out["pred_cls"] for out in outs]
         pred_cls = [torch.unique(item) for sublist in pred_cls for item in sublist]
@@ -472,17 +473,32 @@ class FasterRCNN_lightning(pl.LightningModule):
         for i in range(len(pred_cls)):
           pred_cls_oh[i, pred_cls[i]] = 1
         pred_cls_oh = pred_cls_oh[:,1:].int()
-        # print('Preds 1: ', pred_cls_oh)
+        print('Preds 1: ', pred_cls_oh)
 
         if self.torch_mets:
             for met in self.torch_mets[0]:
+                print("Torch Metrics")
                 acc,pres,rec,f1 = tm(pred_cls_oh, gt_cls_oh, self.num_classes-1, met, mdmc = self.torch_mets[1], prnt = self.torch_mets[2])
+                print("SKLearn Metrics")
+                skacc,skpres,skrec,skf1 = sklearn_metrics(pred_cls_oh, gt_cls_oh, met, prnt = self.torch_mets[2])
                 mets = {'Accuracy':acc,
                         'Precision':pres,
                         'Recall':rec,
                         'F1-Score':f1}
-                for key, value in mets.items():
-                    self.log(f"{key}_{met}_Method", value)
+                skmets = {'Accuracy':skacc,
+                        'Precision':skpres,
+                        'Recall':skrec,
+                        'F1-Score':skf1}
+                try:
+                    if self.torch_mets[3] == 'torch':
+                        for key, value in mets.items():
+                            self.log(f"{key}_{met}_Method", value)
+                    elif self.torch_mets[3] == 'sklearn':
+                        for key, value in skmets.items():
+                            self.log(f"{key}_{met}_Method", value)
+                except:
+                    for key, value in mets.items():
+                        self.log(f"{key}_{met}_Method", value)
 
         # self.accuracy(pred_cls,gt_cls)
         # self.log('train_acc_step', self.accuracy)
