@@ -117,10 +117,10 @@ def groupedBarPlot(data, xticks, title,legend=True,axislabels = False,width=0.35
     elif len(data) == 4:
         ldata = list(data.values())
         keys = list(data.keys())
-        rects[keys[0]] = ax.bar(x + width/2, ldata[0], width, label=keys[0])
-        rects[keys[1]] = ax.bar(x - width/2, ldata[1], width, label=keys[1])
-        rects[keys[2]] = ax.bar(x + 1.5*width, ldata[2], width, label=keys[2])
-        rects[keys[3]] = ax.bar(x - 1.5*width, ldata[3], width, label=keys[3])
+        rects[keys[0]] = ax.bar(x + width/2, ldata[0], width, label=keys[0], color = cl[0]))
+        rects[keys[1]] = ax.bar(x - width/2, ldata[1], width, label=keys[1], color = cl[1]))
+        rects[keys[2]] = ax.bar(x + 1.5*width, ldata[2], width, label=keys[2], color = cl[2]))
+        rects[keys[3]] = ax.bar(x - 1.5*width, ldata[3], width, label=keys[3], color = cl[3]))
 
     # ax.patch.set_facecolor('red')
     ax.patch.set_alpha(0.0)
