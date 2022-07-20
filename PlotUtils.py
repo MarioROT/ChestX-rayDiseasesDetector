@@ -23,7 +23,7 @@ plt.rcParams["image.cmap"] = "Set2"
 def Set_ColorsIn(cyc=None):
     global clrs
     if cyc:
-        clrs = cyc    
+        clrs = cyc
 
 def donutPlot(data, recipe, title = False,png = False, pdf = False, legend = True, figsize=(18, 9), fontset=False):
     if fontset:
@@ -59,7 +59,7 @@ def donutPlot(data, recipe, title = False,png = False, pdf = False, legend = Tru
         plt.savefig(pdf + '.pdf', transparent=True)
     plt.show()
 
-def groupedBarPlot(data, xticks, title,legend=True,axislabels = False,width=0.35,figsize=(25,10), barLabel=False, png = False, pdf = False, colors = None, fsizes = False, axisLim = False, xtick_rot=False):
+def groupedBarPlot(data, xticks, title,legend=True,axislabels = False,width=0.35,figsize=(25,10), barLabel=False, png = False, pdf = False, colors = None, fsizes = False, axisLim = False, xtick_rot=False, bLconfs = ['%.2f', 14]):
     """Width recomendado para 2 barras agrupadas es 0.35, para 3 y 4 es 0.2
        Para usar el barLabel, debe ser una lista de listas por cada tipo,
        aun que sea solo una barra por paso en el eje x deber ser una lista contenida dentro de otra
@@ -153,7 +153,7 @@ def groupedBarPlot(data, xticks, title,legend=True,axislabels = False,width=0.35
                 ax.bar_label(i, padding=3, labels=['{}\n{:.2f}%'.format(ldata[j][r], barLabel[j][r]) for r in range(len(ldata[0]))])
     else:
         for i in rects.values():
-            ax.bar_label(i, padding=3)
+            ax.bar_label(i, padding=3, fmt = '%.2f', fontsize = bLconfs[1])
 
     fig.tight_layout()
 
