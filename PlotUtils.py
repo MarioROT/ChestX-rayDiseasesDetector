@@ -153,7 +153,7 @@ def groupedBarPlot(data, xticks, title,legend=True,axislabels = False,width=0.35
                 ax.bar_label(i, padding=3, labels=['{}\n{:.2f}%'.format(ldata[j][r], barLabel[j][r]) for r in range(len(ldata[0]))])
     else:
         for i in rects.values():
-            ax.bar_label(i, padding=3, fmt = '%.2f', fontsize = bLconfs[1])
+            ax.bar_label(i, padding=3, fmt = bLconfs[0], fontsize = bLconfs[1])
 
     fig.tight_layout()
 
