@@ -253,3 +253,11 @@ def experiments_metric_values(session, user_project, experiments, metric, legend
         else:
             tot_df[exp.id] = exp.get_numeric_channels_values(metric)[metric]
     return pd.DataFrame.from_dict(tot_df)
+
+def split_data(exps):
+    exps_smooth = exps[exps.drop('x', axis = 1).columns[:int((len(exps.columns)-1)/2)]]
+    exps_smooth['x'] = exps.x
+    exps_normal = exps[exps.drop('x', axis = 1).columns[int((len(exps.columns)-1)/2):]]
+    exps_normal['x'] = exps.x
+
+    return exps_normal, exps_smooth

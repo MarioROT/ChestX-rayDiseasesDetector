@@ -492,7 +492,7 @@ def display_batch(rows, cols, x, y_true, y_pred=None,
                  y_pred_color=y_pred_color,
                  figsize=figsize)
 
-def oneplot_multexps(df, title = None, axislabels = None, cpalette = 'Set1', png = False, pdf = False, style = 'seaborn-darkgrid', legendParams = ['upper center', (1.0,1.0)], fig_size = [12,10], fsizes = {'title':20, 'axes':20, 'legend':15, 'ticks':15}, x_axis = 'x'):
+def oneplot_multexps(df, title = None, axislabels = None, cpalette = 'Set1',smooth = False, png = False, pdf = False, style = 'seaborn-darkgrid', legendParams = ['upper center', (1.0,1.0)], fig_size = [12,10], fsizes = {'title':20, 'axes':20, 'legend':15, 'ticks':15}, x_axis = 'x'):
     # Initialize the figure style
     plt.style.use(style)
 
@@ -512,10 +512,22 @@ def oneplot_multexps(df, title = None, axislabels = None, cpalette = 'Set1', png
 
     fig, ax = plt.subplots(figsize=(fig_size[0], fig_size[1]))
 
-    num=0
-    for exp in df.drop('x', axis = 1):
-        num += 1
-        ax.plot(df.x, df[exp], label=exp, color=palette((num-1) % c_av))
+    if not smooth:
+        num=0
+        for exp in df.drop('x', axis = 1):
+            num += 1
+            ax.plot(df.x, df[exp], label=exp, color=palette((num-1) % c_av))
+    else:
+        num=0
+        for exp in df[df.drop('x', axis = 1).columns[:int((len(df.columns)-1)/2)]]:
+            num += 1
+            ax.plot(df.x, df[exp], label='_Hidden', color=palette((num-1) % c_av), alpha = smooth)
+        num=0
+        for exp in df[df.drop('x', axis = 1).columns[int((len(df.columns)-1)/2):]]:
+            num += 1
+            ax.plot(df.x, df[exp], label=exp[:-7], color=palette((num-1) % c_av))
+
+
     if axislabels:
         plt.xlabel(axislabels[0], fontsize=fsizes['axes'])
         plt.ylabel(axislabels[1], fontsize=fsizes['axes'])
@@ -533,10 +545,10 @@ def oneplot_multexps(df, title = None, axislabels = None, cpalette = 'Set1', png
         plt.savefig(png + '.png', transparent=True, bbox_inches='tight')
     if pdf:
         plt.savefig(pdf + '.pdf', transparent=True, bbox_inches='tight')
-        
+
     plt.show()
 
-def color_grid_plots(df, gridshape, title, axislabels = None, cpalette = 'Set1', png = False, pdf = False, style = 'seaborn-darkgrid', titleYloc = 0.98, fig_size = None, fsizes = False, x_axis = 'x'):
+def color_grid_plots(df, gridshape, title, axislabels = None, cpalette = 'Set1', smooth=False, png = False, pdf = False, style = 'seaborn-darkgrid', titleYloc = 0.98, fig_size = None, fsizes = False, x_axis = 'x'):
     if fsizes:
         for key,size in fsizes.items():
             if key == 'font':
@@ -599,7 +611,10 @@ def color_grid_plots(df, gridshape, title, axislabels = None, cpalette = 'Set1',
             plt.tick_params(labelleft='off')
 
         # Add title
-        plt.title(column, loc='left', fontsize=12, fontweight=0, color=palette((num-1) % c_av) )
+        if not smooth:
+            plt.title(column, loc='left', fontsize=12, fontweight=0, color=palette((num-1) % c_av) )
+        else:
+            plt.title(column[:-7], loc='left', fontsize=12, fontweight=0, color=palette((num-1) % c_av) )
         if axislabels:
             plt.xlabel(axislabels[0])
             plt.ylabel(axislabels[1])
