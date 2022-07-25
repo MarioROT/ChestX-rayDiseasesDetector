@@ -491,3 +491,127 @@ def display_batch(rows, cols, x, y_true, y_pred=None,
                  y_true_color=y_true_color,
                  y_pred_color=y_pred_color,
                  figsize=figsize)
+
+def oneplot_multexps(df, title = None, axislabels = None, cpalette = 'Set1', png = False, pdf = False, style = 'seaborn-darkgrid', legendParams = ['upper center', (1.0,1.0)], fig_size = [12,10], fsizes = {'title':20, 'axes':20, 'legend':15, 'ticks':15}, x_axis = 'x'):
+    # Initialize the figure style
+    plt.style.use(style)
+
+    # create a color palette
+    n_cols = len(df.drop('x', axis = 1).columns)
+    try:
+        palette = plt.get_cmap(cpalette)
+        c_av = len(palette.colors)
+    if c_av > n_cols:
+        palette = plt.get_cmap(cpalette, n_cols)
+        c_av = len(palette.colors)
+    else:
+        palette = plt.get_cmap(cpalette)
+    except:
+        c_av = n_cols
+        palette = plt.get_cmap(cpalette, c_av)
+
+    fig, ax = plt.subplots(figsize=(fig_size[0], fig_size[1]))
+
+    num=0
+    for exp in df.drop('x', axis = 1):
+        num += 1
+        ax.plot(df.x, df[exp], label=exp, color=palette((num-1) % c_av))
+    if axislabels:
+        plt.xlabel(axislabels[0], fontsize=fsizes['axes'])
+        plt.ylabel(axislabels[1], fontsize=fsizes['axes'])
+    if title:
+        plt.title(title, fontsize=fsizes['title'])
+    if legendParams:
+        plt.legend(fontsize=fsizes['legend'], loc=legendParams[0], bbox_to_anchor = legendParams[1], fancybox=True, shadow=True, ncol=4)
+    else:
+        plt.legend()
+
+    plt.xticks(fontsize=fsizes['ticks'])
+    plt.yticks(fontsize=fsizes['ticks'])
+
+    plt.rc('font', size=25)
+    plt.show()
+
+def color_grid_plots(df, gridshape, title, axislabels = None, cpalette = 'Set1', png = False, pdf = False, style = 'seaborn-darkgrid', titleYloc = 0.98, fig_size = None, fsizes = False, x_axis = 'x'):
+    if fsizes:
+        for key,size in fsizes.items():
+            if key == 'font':
+                plt.rc(key, size=size)
+            elif key == 'axes':
+                plt.rc(key, titlesize=size)
+                plt.rc(key, labelsize=size)
+            elif key in ['xtick','ytick']:
+                plt.rc(key, labelsize=size)
+            elif key == 'legend':
+                plt.rc(key, fontsize=size)
+            elif key == 'figure':
+                plt.rc(key, titlesize=size)
+
+    # Initialize the figure style
+    plt.style.use(style)
+
+    # create a color palette
+    n_cols = len(df.drop('x', axis = 1).columns)
+    try:
+        palette = plt.get_cmap(cpalette)
+        c_av = len(palette.colors)
+        if c_av > n_cols:
+            palette = plt.get_cmap(cpalette, n_cols)
+            c_av = len(palette.colors)
+        else:
+            palette = plt.get_cmap(cpalette)
+    except:
+        c_av = n_cols
+        palette = plt.get_cmap(cpalette, c_av)
+
+
+    # set figure size
+    if fig_size:
+        plt.figure(figsize=(fig_size[0], fig_size[1]))
+
+    # multiple line plot
+    num=0
+    for column in df.drop(x_axis, axis=1):
+        num+=1
+
+        # Find the right spot on the plot
+        plt.subplot(gridshape[0],gridshape[1], num)
+
+        # plot every group, but discrete
+        for v in df.drop(x_axis, axis=1):
+            plt.plot(df[x_axis], df[v], marker='', color='grey', linewidth=0.6, alpha=0.3)
+
+        # Plot the lineplot
+        plt.plot(df[x_axis], df[column], marker='', color=palette((num-1) % c_av), linewidth=2.4, alpha=0.9, label=column)
+
+        # Same limits for every chart
+        # plt.xlim(0,500)
+        # plt.ylim(-2,22)
+
+        # Not ticks everywhere
+        if num in range(7) :
+            plt.tick_params(labelbottom='off')
+        if num not in [1,4,7] :
+            plt.tick_params(labelleft='off')
+
+        # Add title
+        plt.title(column, loc='left', fontsize=12, fontweight=0, color=palette((num-1) % c_av) )
+        if axislabels:
+            plt.xlabel(axislabels[0])
+            plt.ylabel(axislabels[1])
+
+    # general title
+    # plt.suptitle(title, fontsize=13, fontweight=0, color='black', style='italic', y=1.02)
+    plt.suptitle(title, fontweight=0, color='black', style='italic', y = titleYloc)
+
+    # # Axis titles
+    # plt.text(0.5, 0.02, 'Time', ha='center', va='center')
+    # plt.text(0.06, 0.5, 'Note', ha='center', va='center', rotation='vertical')
+
+    if png:
+        plt.savefig(png + '.png', transparent=True, bbox_inches='tight')
+    if pdf:
+        plt.savefig(pdf + '.pdf', transparent=True, bbox_inches='tight')
+
+    # Show the graph
+    plt.show()

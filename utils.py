@@ -238,3 +238,17 @@ def compute_iou(a, b):
     # computamos IOU
     iou = torch.mean(inter / union)
     return iou
+
+def experiments_metric_values(user_project, experiments, metric, legend_parameter = None):
+    project = session.get_project(user_project)
+    experiments = project.get_experiments(id=experiments)
+    tot_df = {}
+    x_max = 0
+    for exp in experiments:
+        if len(exp.get_numeric_channels_values(metric)['x']) > x_max:
+            tot_df['x'] = exp.get_numeric_channels_values(metric)['x']
+        if legend_parameter in exp.get_parameters().keys():
+            tot_df[exp.get_parameters()[legend_parameter]] = exp.get_numeric_channels_values(metric)[metric]
+        else:
+            tot_df[exp.id] = exp.get_numeric_channels_values(metric)[metric]
+    return pd.DataFrame.from_dict(tot_df)
