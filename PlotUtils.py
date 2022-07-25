@@ -501,11 +501,11 @@ def oneplot_multexps(df, title = None, axislabels = None, cpalette = 'Set1', png
     try:
         palette = plt.get_cmap(cpalette)
         c_av = len(palette.colors)
-    if c_av > n_cols:
-        palette = plt.get_cmap(cpalette, n_cols)
-        c_av = len(palette.colors)
-    else:
-        palette = plt.get_cmap(cpalette)
+        if c_av > n_cols:
+            palette = plt.get_cmap(cpalette, n_cols)
+            c_av = len(palette.colors)
+        else:
+            palette = plt.get_cmap(cpalette)
     except:
         c_av = n_cols
         palette = plt.get_cmap(cpalette, c_av)
