@@ -15,6 +15,8 @@ import torchvision.transforms as TIM
 from metrics.bounding_box import BoundingBox
 from metrics.enumerators import BBFormat, BBType
 
+from scipy.signal import savgol_filter
+
 
 def get_filenames_of_path(path: pathlib.Path, ext: str = "*"):
     """
