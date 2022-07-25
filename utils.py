@@ -239,10 +239,11 @@ def compute_iou(a, b):
     iou = torch.mean(inter / union)
     return iou
 
-def experiments_metric_values(session, user_project, experiments, metric, legend_parameter = None):
+def experiments_metric_values(session, user_project, experiments, metric, legend_parameter = None, smooth = [501,3]):
     project = session.get_project(user_project)
     experiments = project.get_experiments(id=experiments)
     tot_df = {}
+    tot_df_smooth = {}
     x_max = 0
     for exp in experiments:
         if len(exp.get_numeric_channels_values(metric)['x']) > x_max:
@@ -252,6 +253,13 @@ def experiments_metric_values(session, user_project, experiments, metric, legend
             tot_df[exp.get_parameters()[legend_parameter]] = exp.get_numeric_channels_values(metric)[metric]
         else:
             tot_df[exp.id] = exp.get_numeric_channels_values(metric)[metric]
+    if smooth:
+      for exp in experiments:
+          if legend_parameter in exp.get_parameters().keys():
+              tot_df[exp.get_parameters()[legend_parameter]+'_smooth'] = pd.Series(savgol_filter(list(exp.get_numeric_channels_values(metric)[metric]),smooth[0], smooth[1]))
+          else:
+              tot_df[exp.id+'_smooth'] = savgol_filter(list(exp.get_numeric_channels_values(metric)[metric]),smooth[0], smooth[1])
+
     return pd.DataFrame.from_dict(tot_df)
 
 def split_data(exps):
