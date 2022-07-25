@@ -247,6 +247,7 @@ def experiments_metric_values(session, user_project, experiments, metric, legend
     for exp in experiments:
         if len(exp.get_numeric_channels_values(metric)['x']) > x_max:
             tot_df['x'] = exp.get_numeric_channels_values(metric)['x']
+            x_max = len(exp.get_numeric_channels_values(metric)['x'])
         if legend_parameter in exp.get_parameters().keys():
             tot_df[exp.get_parameters()[legend_parameter]] = exp.get_numeric_channels_values(metric)[metric]
         else:
