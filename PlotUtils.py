@@ -529,7 +529,11 @@ def oneplot_multexps(df, title = None, axislabels = None, cpalette = 'Set1', png
     plt.xticks(fontsize=fsizes['ticks'])
     plt.yticks(fontsize=fsizes['ticks'])
 
-    plt.rc('font', size=25)
+    if png:
+        plt.savefig(png + '.png', transparent=True, bbox_inches='tight')
+    if pdf:
+        plt.savefig(pdf + '.pdf', transparent=True, bbox_inches='tight')
+        
     plt.show()
 
 def color_grid_plots(df, gridshape, title, axislabels = None, cpalette = 'Set1', png = False, pdf = False, style = 'seaborn-darkgrid', titleYloc = 0.98, fig_size = None, fsizes = False, x_axis = 'x'):
