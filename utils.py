@@ -239,7 +239,7 @@ def compute_iou(a, b):
     iou = torch.mean(inter / union)
     return iou
 
-def experiments_metric_values(user_project, experiments, metric, legend_parameter = None):
+def experiments_metric_values(session, user_project, experiments, metric, legend_parameter = None):
     project = session.get_project(user_project)
     experiments = project.get_experiments(id=experiments)
     tot_df = {}
