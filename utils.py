@@ -241,9 +241,17 @@ def compute_iou(a, b):
     iou = torch.mean(inter / union)
     return iou
 
-def experiments_metric_values(session, user_project, experiments, metric, legend_parameter = None, smooth = [501,3]):
+def experiments_metric_values(session, user_project, metric, experiments=None, tags=None, legend_parameter = None, exclusive = None, smooth = [501,3]):
     project = session.get_project(user_project)
-    experiments = project.get_experiments(id=experiments)
+    if experiments:
+        experiments = project.get_experiments(id=experiments)
+    elif tags:
+        if not exclusive:
+            experiments = project.get_experiments()
+            experiments = [exp for exp in experiments if any(tag in exp.get_tags() for tag in tags)]
+        else:
+            experiments = project.get_experiments()
+            experiments = [exp for exp in experiments if all(tag in exp.get_tags() for tag in tags)]
     tot_df = {}
     tot_df_smooth = {}
     x_max = 0
@@ -254,7 +262,7 @@ def experiments_metric_values(session, user_project, experiments, metric, legend
         if legend_parameter in exp.get_parameters().keys():
             tot_df[exp.get_parameters()[legend_parameter]] = exp.get_numeric_channels_values(metric)[metric]
         else:
-            tot_df[exp.id] = exp.get_numeric_channels_values(metric)[metric]
+            tot_df[exp.get_system_properties()['id']] = exp.get_numeric_channels_values(metric)[metric]
     if smooth:
       for exp in experiments:
           if legend_parameter in exp.get_parameters().keys():
