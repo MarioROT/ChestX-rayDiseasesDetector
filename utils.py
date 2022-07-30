@@ -242,6 +242,9 @@ def compute_iou(a, b):
     return iou
 
 def experiments_metric_values(session, user_project, metric, experiments=None, tags=None, legend_parameter = None, exclusive = None, smooth = [501,3]):
+    """If exclusive and more than one tag look for experiments that have
+     exactly all tags, if not exclusive with at least one tag is enough
+     get an experiment"""
     project = session.get_project(user_project)
     if experiments:
         experiments = project.get_experiments(id=experiments)
