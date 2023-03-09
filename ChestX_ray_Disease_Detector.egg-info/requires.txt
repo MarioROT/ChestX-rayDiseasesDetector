@@ -1,0 +1,12 @@
+numpy
+scikit-image
+sklearn
+importlib_metadata
+neptune-contrib
+PyQt5
+ipywidgets==7.6.3
+albumentations==0.5.2
+pytorch-lightning==1.6.5
+magicgui==0.2.9
+torchmetrics==0.7.3
+opencv-python-headless==4.1.2.30

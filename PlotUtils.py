@@ -59,7 +59,7 @@ def donutPlot(data, recipe, title = False,png = False, pdf = False, legend = Tru
         plt.savefig(pdf + '.pdf', transparent=True)
     plt.show()
 
-def groupedBarPlot(data, xticks, title,legend=True,axislabels = False,width=0.35,figsize=(25,10), barLabel=False, png = False, pdf = False, colors = None, fsizes = False, axisLim = False, xtick_rot=False, bLconfs = ['%.2f', 14]):
+def groupedBarPlot(data, xticks, title,legend=True,axislabels = False,width=0.35,figsize=(25,10), barLabel=False, png = False, pdf = False, colors = None, fsizes = False, axisLim = False, xtick_rot=False, bLconfs = ['%.2f', 14], labRot = 0, barh=False):
     """Width recomendado para 2 barras agrupadas es 0.35, para 3 y 4 es 0.2
        Para usar el barLabel, debe ser una lista de listas por cada tipo,
        aun que sea solo una barra por paso en el eje x deber ser una lista contenida dentro de otra
@@ -99,61 +99,100 @@ def groupedBarPlot(data, xticks, title,legend=True,axislabels = False,width=0.35
         fig, ax = plt.subplots()
 
     rects = {}
-    if len(data) == 1:
-        ldata = list(data.values())
-        keys = list(data.keys())
-        rects[keys[0]] = ax.bar(x, ldata[0], width, label=keys[0], color = cl)
-    elif len(data) == 2:
-        ldata = list(data.values())
-        keys = list(data.keys())
-        rects[keys[0]] = ax.bar(x + width/2, ldata[0], width, label=keys[0], color = cl[2])
-        rects[keys[1]] = ax.bar(x - width/2, ldata[1], width, label=keys[1], color = cl[3])
-    elif len(data) == 3:
-        ldata = list(data.values())
-        keys = list(data.keys())
-        rects[keys[0]] = ax.bar(x, ldata[0], width, label=keys[0])
-        rects[keys[1]] = ax.bar([i+width for i in x], ldata[1], width, label=keys[1])
-        rects[keys[2]] = ax.bar([i+2*width for i in x], ldata[2], width, label=keys[2])
-    elif len(data) == 4:
-        ldata = list(data.values())
-        keys = list(data.keys())
-        rects[keys[0]] = ax.bar(x + width/2, ldata[0], width, label=keys[0], color = cl[0])
-        rects[keys[1]] = ax.bar(x - width/2, ldata[1], width, label=keys[1], color = cl[1])
-        rects[keys[2]] = ax.bar(x + 1.5*width, ldata[2], width, label=keys[2], color = cl[2])
-        rects[keys[3]] = ax.bar(x - 1.5*width, ldata[3], width, label=keys[3], color = cl[3])
+    if not barh:
+        if len(data) == 1:
+            ldata = list(data.values())
+            keys = list(data.keys())
+            rects[keys[0]] = ax.bar(x, ldata[0], width, label=keys[0], color = cl)
+        elif len(data) == 2:
+            ldata = list(data.values())
+            keys = list(data.keys())
+            rects[keys[0]] = ax.bar(x + width/2, ldata[0], width, label=keys[0], color = cl[2])
+            rects[keys[1]] = ax.bar(x - width/2, ldata[1], width, label=keys[1], color = cl[3])
+        elif len(data) == 3:
+            ldata = list(data.values())
+            keys = list(data.keys())
+            rects[keys[0]] = ax.bar(x, ldata[0], width, label=keys[0])
+            rects[keys[1]] = ax.bar([i+width for i in x], ldata[1], width, label=keys[1])
+            rects[keys[2]] = ax.bar([i+2*width for i in x], ldata[2], width, label=keys[2])
+        elif len(data) == 4:
+            ldata = list(data.values())
+            keys = list(data.keys())
+            rects[keys[0]] = ax.bar(x + width/2, ldata[0], width, label=keys[0], color = cl[0])
+            rects[keys[1]] = ax.bar(x - width/2, ldata[1], width, label=keys[1], color = cl[1])
+            rects[keys[2]] = ax.bar(x + 1.5*width, ldata[2], width, label=keys[2], color = cl[2])
+            rects[keys[3]] = ax.bar(x - 1.5*width, ldata[3], width, label=keys[3], color = cl[3])
 
-    # ax.patch.set_facecolor('red')
-    ax.patch.set_alpha(0.0)
+        # ax.patch.set_facecolor('red')
+        ax.patch.set_alpha(0.0)
 
-    if axislabels:
-        ax.set_xlabel(axislabels[0])
-        ax.set_ylabel(axislabels[1])
+        if axislabels:
+            ax.set_xlabel(axislabels[0])
+            ax.set_ylabel(axislabels[1])
 
-    ax.set_title(title)
-    if len(data) == 3:
-        ax.set_xticks(x+width)
+        ax.set_title(title)
+        if len(data) == 3:
+            ax.set_xticks(x+width)
+        else:
+            ax.set_xticks(x, labels = xticks)
+        if xtick_rot:
+            ax.set_xticklabels(xticks, rotation = xtick_rot)
+        else:
+            ax.set_xticklabels(xticks)
     else:
-        ax.set_xticks(x)
-    if xtick_rot:
-        ax.set_xticklabels(xticks, rotation = xtick_rot)
-    else:
-        ax.set_xticklabels(xticks)
+        if len(data) == 1:
+            ldata = list(data.values())
+            keys = list(data.keys())
+            rects[keys[0]] = ax.barh(x, ldata[0], width, label=keys[0], color = cl)
+        elif len(data) == 2:
+            ldata = list(data.values())
+            keys = list(data.keys())
+            rects[keys[0]] = ax.barh(x + width/2, ldata[0], width, label=keys[0], color = cl[2])
+            rects[keys[1]] = ax.barh(x - width/2, ldata[1], width, label=keys[1], color = cl[3])
+        elif len(data) == 3:
+            ldata = list(data.values())
+            keys = list(data.keys())
+            rects[keys[0]] = ax.barh(x, ldata[0], width, label=keys[0])
+            rects[keys[1]] = ax.barh([i+width for i in x], ldata[1], width, label=keys[1])
+            rects[keys[2]] = ax.barh([i+2*width for i in x], ldata[2], width, label=keys[2])
+        elif len(data) == 4:
+            ldata = list(data.values())
+            keys = list(data.keys())
+            rects[keys[0]] = ax.barh(x + width/2, ldata[0], width, label=keys[0], color = cl[0])
+            rects[keys[1]] = ax.barh(x - width/2, ldata[1], width, label=keys[1], color = cl[1])
+            rects[keys[2]] = ax.barh(x + 1.5*width, ldata[2], width, label=keys[2], color = cl[2])
+            rects[keys[3]] = ax.barh(x - 1.5*width, ldata[3], width, label=keys[3], color = cl[3])
+
+        # ax.patch.set_facecolor('red')
+        ax.patch.set_alpha(0.0)
+
+        if axislabels:
+            ax.set_xlabel(axislabels[1])
+            ax.set_ylabel(axislabels[0])
+
+        ax.set_title(title)
+        if len(data) == 3:
+            ax.set_yticks(x+width)
+        else:
+            ax.set_yticks(x, labels = xticks)
+        if xtick_rot:
+            ax.set_yticklabels(xticks, rotation = xtick_rot)
+        else:
+            ax.set_yticklabels(xticks)
 
     if legend:
         ax.legend(prop={"size":30})
 
     if barLabel:
-#         error = ['Hola' for i in range(9)]
-#         ax.bar_label(list(rects.values())[0], padding=3, labels=[ e for e in error])
         try:
             for j,i in enumerate(rects.values()):
-                ax.bar_label(i, padding=3, labels=[barLabel[0][:].format(ldata[j][r], barLabel[j+1][r]) for r in range(len(ldata[0]))])
+                ax.bar_label(i, padding=3, labels=[barLabel[0][:].format(ldata[j][r], barLabel[j+1][r]) for r in range(len(ldata[0]))], rotation = labRot)
         except:
             for j,i in enumerate(rects.values()):
-                ax.bar_label(i, padding=3, labels=['{}\n{:.2f}%'.format(ldata[j][r], barLabel[j][r]) for r in range(len(ldata[0]))])
+                ax.bar_label(i, padding=3, labels=['{}\n{:.2f}%'.format(ldata[j][r], barLabel[j][r]) for r in range(len(ldata[0]))], rotation = labRot)
     else:
         for i in rects.values():
-            ax.bar_label(i, padding=3, fmt = bLconfs[0], fontsize = bLconfs[1])
+            ax.bar_label(i, padding=3, fmt = bLconfs[0], fontsize = bLconfs[1], rotation = labRot)
 
     fig.tight_layout()
 
@@ -380,7 +419,7 @@ def chordDiagram(X, ax, colors=None, width=0.1, pad=2, chordwidth=0.7, png = Fal
     #print(nodePos)
     return nodePos
 
-def plot_confusion_matrix(cm, classes, normalize=False,colors = None,tit = False, axisLabels=False,fsizes = False, png = False, pdf = False):
+def plot_confusion_matrix(cm, classes, normalize=False,colors = None,tit = False, axisLabels=False,fsizes = False, xtickRot = 45, png = False, pdf = False):
     if fsizes:
         for key,size in fsizes.items():
             if key == 'font':
@@ -417,7 +456,7 @@ def plot_confusion_matrix(cm, classes, normalize=False,colors = None,tit = False
     plt.title(title)
     plt.colorbar(shrink=0.75)
     tick_marks = np.arange(len(classes))
-    plt.xticks(tick_marks, classes, rotation=45)
+    plt.xticks(tick_marks, classes, rotation=xtickRot)
     plt.yticks(tick_marks, classes)
     thresh = cm.max()/2.
     for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):

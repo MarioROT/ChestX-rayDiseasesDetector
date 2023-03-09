@@ -1,0 +1,11 @@
+Metadata-Version: 2.1
+Name: ChestX-ray-Disease-Detector
+Version: 0.0.1
+Home-page: https://github.com/Mariuki/ChestX-rayDiseasesDetector
+Author: Mario Rosas O.
+Author-email: mario_netta12@hotmail.com
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+License-File: LICENSE

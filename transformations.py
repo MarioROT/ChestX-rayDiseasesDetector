@@ -1,7 +1,7 @@
 from functools import partial
 from typing import List, Callable
 
-import albumentations as A
+# import albumentations as A
 import numpy as np
 import torch
 from sklearn.externals._pilutil import bytescale

@@ -8,12 +8,12 @@ import pandas as pd
 import torch
 from IPython import get_ipython
 from neptunecontrib.api import log_table
-from torchvision.models.detection.transform import GeneralizedRCNNTransform
-from torchvision.ops import box_convert, box_area
-import torchvision.transforms as TIM
+# from torchvision.models.detection.transform import GeneralizedRCNNTransform
+# from torchvision.ops import box_convert, box_area
+# import torchvision.transforms as TIM
 
-from metrics.bounding_box import BoundingBox
-from metrics.enumerators import BBFormat, BBType
+# from metrics.bounding_box import BoundingBox
+# from metrics.enumerators import BBFormat, BBType
 
 from scipy.signal import savgol_filter
 
@@ -83,53 +83,53 @@ def enable_gui_qt():
     ipython.magic("gui qt")
 
 
-def stats_dataset(dataset, rcnn_transform: GeneralizedRCNNTransform = False):
-    """
-    Itera sobre el conjunto de datos y regresa algunas estadísticas del mismo.
-    Puede ser útil para seleccionar el tamaño de cajas anclas correcto.
-    """
-    stats = {
-        "image_height": [],
-        "image_width": [],
-        "image_mean": [],
-        "image_std": [],
-        "boxes_height": [],
-        "boxes_width": [],
-        "boxes_num": [],
-        "boxes_area": [],
-    }
-    for batch in dataset:
-        # Lote
-        x, y, x_name, y_name = batch["x"], batch["y"], batch["x_name"], batch["y_name"]
+# def stats_dataset(dataset, rcnn_transform: GeneralizedRCNNTransform = False):
+#     """
+#     Itera sobre el conjunto de datos y regresa algunas estadísticas del mismo.
+#     Puede ser útil para seleccionar el tamaño de cajas anclas correcto.
+#     """
+#     stats = {
+#         "image_height": [],
+#         "image_width": [],
+#         "image_mean": [],
+#         "image_std": [],
+#         "boxes_height": [],
+#         "boxes_width": [],
+#         "boxes_num": [],
+#         "boxes_area": [],
+#     }
+#     for batch in dataset:
+#         # Lote
+#         x, y, x_name, y_name = batch["x"], batch["y"], batch["x_name"], batch["y_name"]
 
-        # Transformaciones
-        if rcnn_transform:
-            x, y = rcnn_transform([x], [y])
-            x, y = x.tensors, y[0]
+#         # Transformaciones
+#         if rcnn_transform:
+#             x, y = rcnn_transform([x], [y])
+#             x, y = x.tensors, y[0]
 
-        # Entrada (imágenes)
-        stats["image_height"].append(x.shape[-2])
-        stats["image_width"].append(x.shape[-1])
-        stats["image_mean"].append(x.mean().item())
-        stats["image_std"].append(x.std().item())
+#         # Entrada (imágenes)
+#         stats["image_height"].append(x.shape[-2])
+#         stats["image_width"].append(x.shape[-1])
+#         stats["image_mean"].append(x.mean().item())
+#         stats["image_std"].append(x.std().item())
 
-        # Objetivos (etiqueta)
-        wh = box_convert(y["boxes"], "xyxy", "xywh")[:, -2:]
-        stats["boxes_height"].append(wh[:, -2])
-        stats["boxes_width"].append(wh[:, -1])
-        stats["boxes_num"].append(len(wh))
-        stats["boxes_area"].append(box_area(y["boxes"]))
+#         # Objetivos (etiqueta)
+#         wh = box_convert(y["boxes"], "xyxy", "xywh")[:, -2:]
+#         stats["boxes_height"].append(wh[:, -2])
+#         stats["boxes_width"].append(wh[:, -1])
+#         stats["boxes_num"].append(len(wh))
+#         stats["boxes_area"].append(box_area(y["boxes"]))
 
-    stats["image_height"] = torch.tensor(stats["image_height"], dtype=torch.float)
-    stats["image_width"] = torch.tensor(stats["image_width"], dtype=torch.float)
-    stats["image_mean"] = torch.tensor(stats["image_mean"], dtype=torch.float)
-    stats["image_std"] = torch.tensor(stats["image_std"], dtype=torch.float)
-    stats["boxes_height"] = torch.cat(stats["boxes_height"])
-    stats["boxes_width"] = torch.cat(stats["boxes_width"])
-    stats["boxes_area"] = torch.cat(stats["boxes_area"])
-    stats["boxes_num"] = torch.tensor(stats["boxes_num"], dtype=torch.float)
+#     stats["image_height"] = torch.tensor(stats["image_height"], dtype=torch.float)
+#     stats["image_width"] = torch.tensor(stats["image_width"], dtype=torch.float)
+#     stats["image_mean"] = torch.tensor(stats["image_mean"], dtype=torch.float)
+#     stats["image_std"] = torch.tensor(stats["image_std"], dtype=torch.float)
+#     stats["boxes_height"] = torch.cat(stats["boxes_height"])
+#     stats["boxes_width"] = torch.cat(stats["boxes_width"])
+#     stats["boxes_area"] = torch.cat(stats["boxes_area"])
+#     stats["boxes_num"] = torch.tensor(stats["boxes_num"], dtype=torch.float)
 
-    return stats
+#     return stats
 
 
 def from_file_to_boundingbox(file_name: pathlib.Path, groundtruth: bool = True):
